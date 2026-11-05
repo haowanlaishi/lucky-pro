@@ -108,6 +108,12 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
     opacity: 1;
   }
 }
+/* 👈 终极防长按选中：把按钮、选号球、顶部导航全部锁死 */
+.btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb {
+  -webkit-touch-callout: none !important; /* 禁用长按弹出系统菜单 */
+  -webkit-user-select: none !important;   /* 禁用文字选中 */
+  user-select: none !important;
+}
 </style></head>
 <body>
 <div class="app-scroll">
