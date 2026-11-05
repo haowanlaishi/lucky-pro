@@ -1,29 +1,20 @@
 name: Build Unsigned iOS
 on: [workflow_dispatch]
-
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           
-      - name: Install deps
-        run: npm install --legacy-peer-deps
-        
-      - name: Add iOS and Sync
+      - name: Install deps & sync
         run: |
-          npx cap add ios
+          npm install
           npx cap sync ios
-          
-      - name: Generate App Icons
-        run: |
-          npx capacitor-assets generate --ios
           
       - name: Build unsigned archive
         run: |
@@ -33,15 +24,13 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
             
-      - name: Package to IPA
+      - name: Package artifact
         run: |
           cd $RUNNER_TEMP
-          mkdir Payload
-          cp -r App.xcarchive/Products/Applications/App.app Payload/
-          zip -r App-unsigned.ipa Payload
+          zip -r App-unsigned.xcarchive.zip App.xcarchive
           
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: ios-unsigned-ipa
-          path: ${{ runner.temp }}/App-unsigned.ipa
+          name: ios-unsigned-build
+          path: ${{ runner.temp }}/App-unsigned.xcarchive.zip
