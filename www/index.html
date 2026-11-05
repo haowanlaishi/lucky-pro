@@ -145,7 +145,7 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
 function playFeedback() {
   // 1. 尝试 Capacitor 原生震动（如果将来用 Capacitor 打包）
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
-    window.Capacitor.Plugins.Haptics.impact({ style: 'LIGHT' }).catch(() => {});
+    window.Capacitor.Plugins.Haptics.impact({ style: 'HEAVY' }).catch(() => {});
   } 
   // 2. 降级到普通浏览器的震动
   else if (navigator.vibrate) {
