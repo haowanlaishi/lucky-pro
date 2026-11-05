@@ -63,10 +63,11 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
 .nb.lucky:nth-child(7) { animation-delay: 0.35s; }
 .ball.lucky::after, .nb.lucky::after, .pb.lucky::after { content: '✨'; position: absolute; top: -8px; right: -5px; font-size: 12px; }
 .ctx-menu-overlay { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
   background: rgba(0,0,0,0.1); z-index: 2000; 
   display: none; opacity: 0; transition: opacity 0.2s; 
-  pointer-events: none; /* 👈 核心：默认不拦截点击 */
+  pointer-events: none;
+  touch-action: none; /* 👈 核心新增：禁止被穿到底层滚动 */
 }
 .ctx-menu-overlay.show { 
   display: block; opacity: 1; 
@@ -91,7 +92,12 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
 .ctx-menu-item:active { background: #f5f6f9; }
 .ctx-menu-item.copy { color: #1d3557; }
 .ctx-menu-item.fill { color: #e63946; }
-.sc.pressing { transform: scale(0.96) !important; transition: transform 0.1s !important; overflow: hidden; }
+/* 👈 优化：让长按卡片的缩放动画像果冻一样丝滑（使用了和机选按钮同款的贝塞尔曲线） */
+.sc.pressing { 
+  transform: scale(0.96) !important; 
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
+  overflow: hidden; 
+}
 .hi, .nb, .hi * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 /* 👈 新增：斐波那契螺旋展开动画 */
 @keyframes spiral-in {
@@ -1024,13 +1030,15 @@ function copyRecordBelow(item) {
   toast('✅ 已复制到下方');
 }
 document.getElementById('ctx-overlay').addEventListener('touchstart', function(e) {
-  e.stopPropagation();
+  // 强制拦截，防止穿透到底层卡片
   e.preventDefault();
-  if (e.target === this) {
-    this.classList.remove('show');
-    document.querySelectorAll('.sc.pressing').forEach(el => el.classList.remove('pressing'));
-  }
-});
+  e.stopPropagation();
+  
+  // 只要点到这层遮罩，直接关闭菜单和遮罩，并恢复卡片状态
+  this.classList.remove('show');
+  document.getElementById('ctx-menu').classList.remove('show');
+  document.querySelectorAll('.sc.pressing').forEach(el => el.classList.remove('pressing'));
+}, { passive: false }); // 👈 注意这里的 passive: false，这是解决 iOS 吞事件的关键
 
 initState();
 render();
