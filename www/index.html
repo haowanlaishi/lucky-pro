@@ -21,10 +21,10 @@ html, body {
   display: flex; 
   flex-direction: column; 
   align-items: center; 
-  /* 👈 把 100px 改为 85px，并加上底部安全区，确保不挡球 */
-  padding: 0 15px calc(85px + env(safe-area-inset-bottom)) 15px; 
+  /* 👈 从 85px 缩减到 60px，更紧凑 */
+  padding: 0 15px calc(60px + env(safe-area-inset-bottom)) 15px; 
   box-sizing: border-box; 
-  background: #f4f6f9; /* 👈 滚动区域也铺灰底 */
+  background: #f4f6f9; 
   -webkit-transform: translate3d(0, 0, 0); 
   transform: translate3d(0, 0, 0); 
   will-change: transform; 
@@ -57,8 +57,23 @@ html, body {
 .nb{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.8);border:1px solid var(--g);font-size:14px;color:#333;cursor:pointer;transition:all .1s}.nb:active{transform:scale(.9)}.nb.sel.red{background:var(--red);color:#fff;border:none;box-shadow:none}.nb.sel.blue{background:var(--blue);color:#fff;border:none;box-shadow:none}.nb.sel.orange{background:var(--orange);color:#fff;border:none;box-shadow:none}.nb.qf{border-color:#c0c0d9;color:#2d2d6b}.nb.qb{border-color:#e6d3a3;color:#b07d1a}
 .nb-lock{position:absolute;top:-2px;right:-2px;font-size:10px;color:#ffd700;text-shadow:0 0 2px #000;pointer-events:none;z-index:2;}
 .ng.qbg{grid-template-columns:repeat(5,1fr)}
-.btns{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:12px;width:90%;max-width:380px;z-index:999;transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);}
-.btns.hide-bar { transform: translate(-50%, 150%) !important; }
+.btns{
+  position:fixed;
+  /* 👈 从 20px 降到 5px，贴底更近 */
+  bottom:calc(5px + env(safe-area-inset-bottom)); 
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:12px;
+  width:90%;
+  max-width:380px;
+  z-index:999;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.btns.hide-bar { 
+  /* 👈 把 150% 改成 300%，确保下滑彻底消失 */
+  transform: translate(-50%, 300%) !important; 
+}
 .btn{flex:1;border:none;border-radius:30px;padding:15px 0;font-size:16px;font-weight:bold;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn.br{background:rgba(255,255,255,0.65);color:#333;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 20px rgba(0,0,0,0.06);border:1px solid rgba(255,255,255,0.4);}
 .btn.bs{background:linear-gradient(135deg,#f4a261,#e76f51);color:#fff;box-shadow:0 6px 15px rgba(231,111,81,0.4);}
@@ -1013,23 +1028,35 @@ const scrollContainer = document.querySelector('.app-scroll');
 let lastScrollTop = 0;
 const bottomBtns = document.getElementById('bottom-btns');
 
+let isThrottled = false; // 锁定状态标志
+
 scrollContainer.addEventListener('scroll', () => {
   let st = scrollContainer.scrollTop;
+  
+  // 如果还在锁定期内，只更新位置，不触发任何显示/隐藏逻辑
+  if (isThrottled) {
+    lastScrollTop = st;
+    return;
+  }
+
+  // 向上滑动，距离超过 50px，立刻隐藏并锁定 300ms
   if (st > lastScrollTop && st > 50) {
     bottomBtns.classList.add('hide-bar');
-  } else {
+    isThrottled = true;
+    setTimeout(() => { isThrottled = false; }, 300); 
+  } 
+  // 向下滑动，立刻显示
+  else if (st < lastScrollTop) {
     bottomBtns.classList.remove('hide-bar');
   }
-  lastScrollTop = st <= 0 ? 0 : st;
-}, {passive: true});
 
-let scrollTimer;
-scrollContainer.addEventListener('touchmove', () => {
-  clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(() => {
+  // 兜底：如果滚到最顶部了，必定显示
+  if (st === 0) {
     bottomBtns.classList.remove('hide-bar');
-  }, 800);
-}, {passive: true});
+  }
+
+  lastScrollTop = st <= 0 ? 0 : st;
+}, { passive: true });
 
 function copyRecordBelow(item) {
   const isStar = state.view === 'star';
