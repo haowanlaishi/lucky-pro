@@ -8,11 +8,10 @@
 html, body { 
   height: 100%; 
   overflow: hidden; 
-  background: #f4f6f9; /* 👈 强制底层灰底 */
+  background: #f4f6f9; 
+  position: relative; /* 新增这句 */
   font-family: -apple-system, sans-serif; 
   color: #333; 
-  /* 👈 关键：让背景强制延伸到底部安全区 */
-  padding-bottom: env(safe-area-inset-bottom);
 }
 .app-scroll { 
   height: 100%; 
@@ -22,7 +21,7 @@ html, body {
   flex-direction: column; 
   align-items: center; 
   /* 👈 从 85px 缩减到 60px，更紧凑 */
-  padding: 0 15px calc(10px + env(safe-area-inset-bottom)) 15px; 
+  padding: 0 15px calc(40px + env(safe-area-inset-bottom)) 15px; 
   box-sizing: border-box; 
   background: #f4f6f9; 
   -webkit-transform: translate3d(0, 0, 0); 
@@ -60,7 +59,7 @@ html, body {
 .btns{
   position:fixed;
   /* 👈 从 20px 降到 5px，贴底更近 */
-  bottom: calc(-40px + env(safe-area-inset-bottom)); 
+  bottom: calc(10px + env(safe-area-inset-bottom)); 
   left:50%;
   transform:translateX(-50%);
   display:flex;
