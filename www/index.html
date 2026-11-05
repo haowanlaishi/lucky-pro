@@ -135,7 +135,14 @@ html, body {
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
   overflow: hidden; 
 }
-.hi, .nb, .hi * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.hi, .nb, .hi *,
+.sc, .sc *, .hl, .hl *,
+.rw, .rw *, .ball, .ball *,
+.vl, .mg, .mg * {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
 /* 👈 新增：斐波那契螺旋展开动画 */
 @keyframes spiral-in {
   0% {
@@ -705,7 +712,7 @@ function renderList(){
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
   let pressTimer = null;
-  let isLongPressed = false;
+  item._isLongPressed = false;
 
   item.addEventListener('touchstart',e=>{
     // 只有单式、且不是收藏面板，才允许长按
@@ -714,11 +721,13 @@ function bindSwipe(item){
     if (item.classList.contains('swiped-left') || item.classList.contains('swiped-right')) return;
     
     document.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el=>{ if(el!==item){ el.classList.remove('swiped-left','swiped-right'); el.style.transform=''; } });
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; isLongPressed=false; item.style.transition='none';
+        sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
 
     if (allowLongPress) {
-            pressTimer = setTimeout(() => {
-        isLongPressed = true;
+                  pressTimer = setTimeout(() => {
+                item._isLongPressed = true;
+        // 阻止系统长按菜单（双保险，CSS 已覆盖大部分场景）
+        if (e.cancelable) e.preventDefault();
         playFeedback();
         item.parentElement.classList.add('pressing');
         
@@ -736,18 +745,24 @@ function bindSwipe(item){
         overlay.classList.add('show');
         menu.classList.add('show');
         
-        // 克隆节点，彻底避开 iOS 幽灵点击
+                // 克隆节点，彻底避开 iOS 幽灵点击
         const oldCopy = document.getElementById('ctx-copy');
         const oldFill = document.getElementById('ctx-fill');
         const oldCancel = document.getElementById('ctx-cancel');
-        
-        const newCopy = oldCopy.cloneNode(true);
-        const newFill = oldFill.cloneNode(true);
-        const newCancel = oldCancel.cloneNode(true);
-        
-        oldCopy.parentNode.replaceChild(newCopy, oldCopy);
-        oldFill.parentNode.replaceChild(newFill, oldFill);
-        oldCancel.parentNode.replaceChild(newCancel, oldCancel);
+
+        // 空值保护：节点缺失或 parentNode 为空时回退到直接绑定，避免长按菜单失效
+        let newCopy = oldCopy;
+        let newFill = oldFill;
+        let newCancel = oldCancel;
+
+        if (oldCopy && oldFill && oldCancel && oldCopy.parentNode && oldFill.parentNode && oldCancel.parentNode) {
+          newCopy = oldCopy.cloneNode(true);
+          newFill = oldFill.cloneNode(true);
+          newCancel = oldCancel.cloneNode(true);
+          oldCopy.parentNode.replaceChild(newCopy, oldCopy);
+          oldFill.parentNode.replaceChild(newFill, oldFill);
+          oldCancel.parentNode.replaceChild(newCancel, oldCancel);
+        }
         
         // 改用 touchstart，手指碰触瞬间即刻触发，无视系统吞噬
         newCopy.addEventListener('touchstart', (ev) => {
@@ -807,9 +822,9 @@ function bindSwipe(item){
   item.addEventListener('touchmove',e=>{
     const cx=e.touches[0].clientX; const cy=e.touches[0].clientY; const dx=cx-sx; const dy=cy-sy;
     
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       clearTimeout(pressTimer);
-      if(!isLongPressed) item.parentElement.classList.remove('pressing');
+      if(!item._isLongPressed) item.parentElement.classList.remove('pressing');
     }
 
     if(dir===null){ if(Math.abs(dx)>6||Math.abs(dy)>6){ dir=Math.abs(dx)>Math.abs(dy)?'h':'v'; } }
@@ -827,7 +842,7 @@ function bindSwipe(item){
     item.parentElement.classList.remove('pressing');
     item.style.transition='transform .3s cubic-bezier(.25,.8,.25,1)';
     
-    if (isLongPressed) {
+        if (item._isLongPressed) {
       e.preventDefault();
       e.stopPropagation();
       return; 
@@ -854,11 +869,11 @@ function bindSwipe(item){
     setTimeout(()=>{sw=false;},50);
   });
 
-  item.addEventListener('click',e=>{ 
-    if(sw || isLongPressed) {
+    item.addEventListener('click',e=>{ 
+    if(sw || item._isLongPressed) {
       e.stopPropagation(); 
       e.preventDefault();
-      isLongPressed = false;
+      item._isLongPressed = false;
     }
     else if(item.classList.contains('swiped-left') || item.classList.contains('swiped-right')){ 
       item.classList.remove('swiped-left','swiped-right'); 
@@ -1104,7 +1119,18 @@ document.getElementById('ctx-overlay').addEventListener('touchstart', function(e
   this.classList.remove('show');
   document.getElementById('ctx-menu').classList.remove('show');
   document.querySelectorAll('.sc.pressing').forEach(el => el.classList.remove('pressing'));
+  // 复位长按标记，避免下次点卡片被吞
+  document.querySelectorAll('.hi').forEach(el => { el._isLongPressed = false; });
 }, { passive: false }); // 👈 注意这里的 passive: false，这是解决 iOS 吞事件的关键
+// 阻止记录面板长按弹出系统拷贝菜单
+hl.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+}, { passive: false });// 阻止上下文菜单本身的系统长按菜单
+document.getElementById('ctx-menu').addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+}, { passive: false });
 
 initState();
 render();
