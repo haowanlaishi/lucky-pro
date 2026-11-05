@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,height=device-height,interactive-widget=resizes-content">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>千万梦想基金</title>
 <style>
 :root{--p:#e63946;--s:#1d3557;--bg:#f4f6f9;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;--gl:#f9c74f}
@@ -86,21 +86,22 @@ html, body {
 .nb.pop-anim { animation: jelly-pop 0.3s ease-in-out !important; }
 .btn.br.pressing { transform: scale(0.95); background: rgba(245, 230, 200, 0.9); border-color: #f9c74f; }
 .btn.br.flash { animation: btnFlash 0.3s ease-out; }
+/* 👈 新增：确认选号按钮的按压与闪光 */
+.btn.bs.pressing { transform: scale(0.95); opacity: 0.85; }
+.btn.bs.flash { animation: btnFlashOrange 0.4s ease-out; }
+@keyframes btnFlashOrange { 
+  0% { box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.8); } 
+  100% { box-shadow: 0 0 0 25px rgba(231, 111, 81, 0); } 
+}
 @keyframes btnFlash { 0% { box-shadow: 0 0 0 0 rgba(249, 199, 79, 0.7); } 100% { box-shadow: 0 0 0 20px rgba(249, 199, 79, 0); } }
 .ball.lucky, .nb.lucky, .pb.lucky { 
   background: linear-gradient(135deg, #ffdf00, #d4af37) !important; 
   color: #fff !important; 
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.8) !important; 
   border: none !important; 
-  animation: spiral-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; /* 👈 新增螺旋展开 */
-}/* 👈 依次展开的错峰延迟 */
-.nb.lucky:nth-child(1) { animation-delay: 0.05s; }
-.nb.lucky:nth-child(2) { animation-delay: 0.1s; }
-.nb.lucky:nth-child(3) { animation-delay: 0.15s; }
-.nb.lucky:nth-child(4) { animation-delay: 0.2s; }
-.nb.lucky:nth-child(5) { animation-delay: 0.25s; }
-.nb.lucky:nth-child(6) { animation-delay: 0.3s; }
-.nb.lucky:nth-child(7) { animation-delay: 0.35s; }
+  /* 👈 动画已被移除 */
+}
+/* 星星保留 */
 .ball.lucky::after, .nb.lucky::after, .pb.lucky::after { content: '✨'; position: absolute; top: -8px; right: -5px; font-size: 12px; }
 .ctx-menu-overlay { 
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
@@ -140,9 +141,13 @@ html, body {
 .ctx-menu-item.copy { color: #1d3557; }
 .ctx-menu-item.fill { color: #e63946; }
 /* 👈 优化：让长按卡片的缩放动画像果冻一样丝滑（使用了和机选按钮同款的贝塞尔曲线） */
+/* 👈 新增：记录列表里的金球不播放动画，防止滚动卡顿 */
+.hi .ball.lucky { animation: none !important; }
 .sc.pressing { 
-  transform: scale(0.96) !important; 
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
+  transform: scale(0.95) translateY(-4px) !important; /* 缩小并轻微上浮 */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important; /* 加强投影 */
+  z-index: 10; /* 浮在兄弟节点之上 */
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease !important; 
   overflow: hidden; 
 }
 .hi, .nb, .hi *,
@@ -760,32 +765,39 @@ function bindSwipe(item){
         playFeedback();
         item.parentElement.classList.add('pressing');
         
-                        const rect = item.getBoundingClientRect();
+                                const rect = item.getBoundingClientRect();
         const menu = document.getElementById('ctx-menu');
         const overlay = document.getElementById('ctx-overlay');
 
-        // 菜单 3 项固定高度约 132px，宽 120px，不量尺寸，避免 class 切换闪一帧
         const menuH = 132;
         const menuW = 120;
 
-        const gap = 6;  // 菜单与卡片的间距
+        const gap = 6;  
         const screenH = window.innerHeight;
         const screenW = window.innerWidth;
 
+        // 👈 高级感数学补偿：因为卡片加了 scale(0.95) 和 translateY(-4px)
+        // 真实视觉边缘比 getBoundingClientRect 向内缩进了。
+        const scaleOffset = rect.height * 0.025; // 0.95 缩放导致上下各缩进 2.5%
+        const liftOffset = 4; // 上浮的 4px
+
+        const actualTop = rect.top + scaleOffset - liftOffset; 
+        const actualBottom = rect.bottom - scaleOffset - liftOffset;
+        const actualLeft = rect.left + (rect.width * 0.025); // 左侧向内缩进
+
         // 垂直方向：卡片在下半屏 → 菜单在卡片上方；否则在卡片下方
         let top;
-        if (rect.top > screenH / 2) {
-          top = rect.top - menuH - gap;  // 菜单底部贴卡片顶部
+        if (actualTop > screenH / 2) {
+          top = actualTop - menuH - gap;  // 菜单底部贴悬浮卡片顶部
         } else {
-          top = rect.bottom + gap;        // 菜单顶部贴卡片底部
+          top = actualBottom + gap;       // 菜单顶部贴悬浮卡片底部
         }
-        // 兜底：不超出屏幕上下边缘
+        
         if (top < 8) top = 8;
         if (top + menuH > screenH - 8) top = screenH - menuH - 8;
 
-        // 水平方向：菜单左边缘对齐卡片左边缘
-        let left = rect.left;
-        // 兜底：不超出屏幕右边缘
+        // 水平方向：吸附到悬浮卡片的左边缘
+        let left = actualLeft;
         if (left + menuW > screenW - 8) left = screenW - menuW - 8;
         if (left < 8) left = 8;
 
@@ -939,7 +951,15 @@ window.delRec=id=>{
   save(); renderList(); updateBadge(); updateAppendBtn();
 };
 
-function save(){ localStorage.setItem('solo_lotto_v24',JSON.stringify(state.list)); localStorage.setItem('solo_lotto_star_v24',JSON.stringify(state.starList)); }
+function save(){ 
+  try {
+    localStorage.setItem('solo_lotto_v24',JSON.stringify(state.list)); 
+    localStorage.setItem('solo_lotto_star_v24',JSON.stringify(state.starList)); 
+  } catch (e) {
+    console.warn('本地存储写入失败', e);
+    toast('⚠️ 本地存储空间不足，记录可能无法保存');
+  }
+}
 
 let hbTouchX = 0, hbTouchY = 0, isSwipingHb = false;
 hb.addEventListener('touchstart', e => {
@@ -1117,7 +1137,23 @@ btnRandom.addEventListener('touchend', (e) => {
     randomFill(); 
   }
 }, {passive: false});
-$('cf').onclick=confirmSel;
+const btnConfirm = $('cf');
+btnConfirm.addEventListener('touchstart', () => { btnConfirm.classList.add('pressing'); }, {passive: true});
+btnConfirm.addEventListener('touchend', () => { btnConfirm.classList.remove('pressing'); }, {passive: true});
+btnConfirm.addEventListener('touchcancel', () => { btnConfirm.classList.remove('pressing'); }, {passive: true});
+
+btnConfirm.onclick = () => {
+  const beforeCount = state.list.length;
+  confirmSel(); // 执行原有逻辑
+  // 如果记录数量增加了，说明保存成功，触发闪光和震动
+  if (state.list.length > beforeCount) {
+    playFeedback();
+    btnConfirm.classList.remove('flash');
+    void btnConfirm.offsetWidth; // 强制重绘重置动画
+    btnConfirm.classList.add('flash');
+    setTimeout(() => btnConfirm.classList.remove('flash'), 400);
+  }
+};
 cp.onclick=copyRecords;
 
 $('cb').onclick=()=>{
@@ -1219,5 +1255,15 @@ render();
 updateBadge();
 renderList();
 updateAppendBtn();
+// 👈 新增：页面切换到后台/锁屏时，清理所有未完成的定时器，防止回来时突然触发
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // 清理机选长按的定时器
+    if (typeof rbTimer !== 'undefined') clearTimeout(rbTimer);
+    if (typeof rbColorTimer !== 'undefined') clearTimeout(rbColorTimer);
+    // 清理选号区的弹跳动画定时器（可选，防止回来时球乱弹）
+    // 如果有其他全局定时器也可以在这里清理
+  }
+});
 </script>
 </body></html>
