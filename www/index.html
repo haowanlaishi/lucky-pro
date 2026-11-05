@@ -37,7 +37,8 @@ html, body {
 .ab{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;width:100%;padding:5px 0;margin-bottom:5px}
 .ms{display:flex;gap:6px;align-items:center}.mb{background:rgba(255,255,255,0.8);border:1px solid var(--g);padding:5px 14px;border-radius:20px;font-size:13px;color:#666;cursor:pointer;font-weight:bold;backdrop-filter:blur(10px)}.mb.active{border-color:var(--p);color:var(--p);background:rgba(255,240,240,0.9)}.dv{width:1px;height:20px;background:rgba(0,0,0,0.1);margin:0 6px}.hb{background:rgba(255,255,255,0.8);color:#333;border:1px solid rgba(0,0,0,0.05);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;margin-left:auto;backdrop-filter:blur(10px)}.hb.active{background:var(--s);color:#fff;border-color:transparent}.badge{background:var(--p);color:#fff;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%}.ap{display:none;align-items:center;gap:5px;background:transparent;border:none;padding:4px 4px;font-size:13px;font-weight:bold;color:#999;cursor:pointer;transition:all .2s;flex-shrink:0}.ap.show{display:inline-flex}.ap .c{width:16px;height:16px;border-radius:50%;border:2px solid #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;color:transparent;flex-shrink:0;transition:all .2s}.ap.ck{color:var(--gold)}.ap.ck .c{border-color:var(--gold);color:var(--gold)}
 .hp{display:none;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);width:100%;max-width:400px;border-radius:16px;padding:12px;box-shadow:0 8px 32px rgba(0,0,0,.05);margin-bottom:15px;border:1px solid rgba(255,255,255,0.6);flex-direction:column;gap:12px;transition:height .3s}
-.hp.show{display:flex;animation:sd .3s}@keyframes sd{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.hh{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;flex-shrink:0;position:relative;gap:8px}.ht{font-size:14px;font-weight:bold;color:var(--s)}.ta{color:#d4a037;font-size:12px;font-weight:bold;background:#fffaf0;padding:2px 10px;border-radius:12px;border:1px solid #f6e0b5;white-space:nowrap;margin-left:auto}.ta span{font-size:13px;font-weight:900}.cp{display:none;align-items:center;background:transparent;border:none;padding:2px 4px;font-size:13px;font-weight:bold;color:var(--gold);cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}.cp.show{display:inline-flex}.cp:active{transform:scale(.92)}.cb{font-size:13px;color:#999;background:none;border:none;cursor:pointer}.hl{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.sc{position:relative;border-radius:8px;overflow:hidden;background:#fff;flex-shrink:0}
+.hp.show{display:flex;animation:sd .3s}@keyframes sd{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.hp.closing{animation:hp-close .22s cubic-bezier(.25,.8,.25,1) forwards}
+@keyframes hp-close{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-8px)}}.hh{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;flex-shrink:0;position:relative;gap:8px}.ht{font-size:14px;font-weight:bold;color:var(--s)}.ta{color:#d4a037;font-size:12px;font-weight:bold;background:#fffaf0;padding:2px 10px;border-radius:12px;border:1px solid #f6e0b5;white-space:nowrap;margin-left:auto}.ta span{font-size:13px;font-weight:900}.cp{display:none;align-items:center;background:transparent;border:none;padding:2px 4px;font-size:13px;font-weight:bold;color:var(--gold);cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}.cp.show{display:inline-flex}.cp:active{transform:scale(.92)}.cb{font-size:13px;color:#999;background:none;border:none;cursor:pointer}.hl{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.sc{position:relative;border-radius:8px;overflow:hidden;background:#fff;flex-shrink:0}
 .sa{position:absolute;top:0;bottom:0;width:70px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;z-index:1;color:#fff;}
 .sa-right{right:0;background:#ff4d4f;}
 .sa-left{left:0;background:#52c41a;}
@@ -892,12 +893,26 @@ hb.addEventListener('touchend', e => {
 
 hb.onclick = (e) => {
   if (isSwipingHb) { e.preventDefault(); e.stopPropagation(); return; }
-  if(hp.classList.contains('show')){
-    hp.classList.remove('show');hb.classList.remove('active'); mp.classList.remove('hidden');
-    document.getElementById('bottom-btns').style.display='flex'; updateAppendBtn();
-    if (state.type !== 'qxc') {
-      requestAnimationFrame(() => { requestAnimationFrame(() => { renderPreviewArea(LOT[state.type]); renderNormalSelectGrid(LOT[state.type]); }); });
-    }
+    if(hp.classList.contains('show')){
+    // 停掉展开动画，避免收起瞬间重排微抖
+    hp.style.animation = 'none';
+    hb.classList.remove('active');
+    // 播收起动画，结束后再真正隐藏
+    hp.classList.add('closing');
+    const finishClose = () => {
+      hp.classList.remove('closing');
+      hp.classList.remove('show');
+      hp.style.animation = '';
+      mp.classList.remove('hidden');
+      document.getElementById('bottom-btns').style.display='flex';
+      updateAppendBtn();
+      if (state.type !== 'qxc') {
+        requestAnimationFrame(() => { requestAnimationFrame(() => { renderPreviewArea(LOT[state.type]); renderNormalSelectGrid(LOT[state.type]); }); });
+      }
+    };
+    hp.addEventListener('animationend', finishClose, { once: true });
+    // 兜底：动画被系统跳过时也要收起
+    setTimeout(() => { if (hp.classList.contains('closing')) finishClose(); }, 260);
   }else{
     hp.classList.add('show');hb.classList.add('active'); mp.classList.add('hidden');
     document.getElementById('bottom-btns').style.display='none'; renderList();updateAppendBtn();
@@ -943,6 +958,7 @@ document.querySelectorAll('.mb').forEach(btn=>{
 
 const btnRandom = $('rb');
 let rbTimer = null;
+let rbColorTimer = null;
 let rbIsLongPress = false;
 
 btnRandom.addEventListener('touchstart', (e) => {
@@ -955,13 +971,13 @@ btnRandom.addEventListener('touchstart', (e) => {
   
   btnRandom.classList.add('pressing');
   
-  let colorTimer = setTimeout(() => {
+    rbColorTimer = setTimeout(() => {
     if(!rbIsLongPress) btnRandom.style.background = '#f5e6c8';
   }, 300);
 
   rbTimer = setTimeout(() => {
     rbIsLongPress = true;
-    clearTimeout(colorTimer);
+        clearTimeout(rbColorTimer);
     btnRandom.classList.remove('pressing');
     btnRandom.style.background = '';
     btnRandom.classList.add('flash');
@@ -990,12 +1006,14 @@ btnRandom.addEventListener('touchstart', (e) => {
 
 btnRandom.addEventListener('touchmove', () => {
   clearTimeout(rbTimer);
+  clearTimeout(rbColorTimer);
   btnRandom.classList.remove('pressing');
   btnRandom.style.background = '';
 }, {passive: true});
 
 btnRandom.addEventListener('touchend', (e) => {
   clearTimeout(rbTimer);
+  clearTimeout(rbColorTimer);
   btnRandom.classList.remove('pressing');
   btnRandom.style.background = '';
   
