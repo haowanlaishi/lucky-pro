@@ -908,11 +908,21 @@ hb.addEventListener('touchend', e => {
     state.view = state.view === 'list' ? 'star' : 'list';
     updateBadge();
     if (hp.classList.contains('show')) { renderList(); updateAppendBtn(); }
+    // 滑动切换后延迟复位，吞掉滑动那一次的幽灵点击，后续点击正常
+    setTimeout(() => { isSwipingHb = false; }, 50);
+  } else {
+    isSwipingHb = false;
   }
 });
 
 hb.onclick = (e) => {
-  if (isSwipingHb) { e.preventDefault(); e.stopPropagation(); return; }
+  if (isSwipingHb) { isSwipingHb = false; e.preventDefault(); e.stopPropagation(); return; }
+  // 若 hb 的 active 与 hp 的 show 不同步，先强制同步一次
+  if (hp.classList.contains('show') && !hb.classList.contains('active')) {
+    hb.classList.add('active');
+  } else if (!hp.classList.contains('show') && hb.classList.contains('active')) {
+    hb.classList.remove('active');
+  }
     if(hp.classList.contains('show')){
     // 停掉展开动画，避免收起瞬间重排微抖
     hp.style.animation = 'none';
@@ -920,9 +930,10 @@ hb.onclick = (e) => {
     // 播收起动画，结束后再真正隐藏
     hp.classList.add('closing');
     const finishClose = () => {
-      hp.classList.remove('closing');
+            hp.classList.remove('closing');
       hp.classList.remove('show');
       hp.style.animation = '';
+      hb.classList.remove('active');
       mp.classList.remove('hidden');
       document.getElementById('bottom-btns').style.display='flex';
       updateAppendBtn();
@@ -941,6 +952,10 @@ hb.onclick = (e) => {
 
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.onclick=()=>{
+    // 点当前已选中的 tab，不切换彩种，也不关记录面板
+    if (tab.dataset.type === state.type) {
+      return;
+    }
     if (state.type === 'ssq' || state.type === 'dlt') { modeCache[state.type] = state.mode; }
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active');
     state.type = tab.dataset.type;
@@ -949,8 +964,9 @@ document.querySelectorAll('.tab').forEach(tab=>{
     state.view = 'list'; initState();
     if (state.type !== 'qxc') { modeSelCache[state.type].single = { sel: {}, locked: {} }; modeSelCache[state.type].multi = { sel: {}, locked: {} }; }
     render(); renderList(); updateBadge();
-    hp.classList.remove('show'); hb.classList.remove('active'); mp.classList.remove('hidden');
-    document.getElementById('bottom-btns').style.display='flex'; updateAppendBtn();
+    hp.classList.remove('show'); hp.classList.remove('closing'); hp.style.animation = '';
+hb.classList.remove('active'); mp.classList.remove('hidden');
+document.getElementById('bottom-btns').style.display='flex'; updateAppendBtn();
   };
 });
 
