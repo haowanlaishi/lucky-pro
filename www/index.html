@@ -5,8 +5,30 @@
 <style>
 :root{--p:#e63946;--s:#1d3557;--bg:#f4f6f9;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;--gl:#f9c74f}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: -apple-system, sans-serif; color: #333; }
-.app-scroll { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; padding: 0 15px 100px 15px; box-sizing: border-box; -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); will-change: transform; }
+html, body { 
+  height: 100%; 
+  overflow: hidden; 
+  background: #f4f6f9; /* 👈 强制底层灰底 */
+  font-family: -apple-system, sans-serif; 
+  color: #333; 
+  /* 👈 关键：让背景强制延伸到底部安全区 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.app-scroll { 
+  height: 100%; 
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  /* 👈 把 100px 改为 85px，并加上底部安全区，确保不挡球 */
+  padding: 0 15px calc(85px + env(safe-area-inset-bottom)) 15px; 
+  box-sizing: border-box; 
+  background: #f4f6f9; /* 👈 滚动区域也铺灰底 */
+  -webkit-transform: translate3d(0, 0, 0); 
+  transform: translate3d(0, 0, 0); 
+  will-change: transform; 
+}
 .top-sticky-wrapper{ position:-webkit-sticky; position:sticky; top:0; z-index:1000; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; background:rgba(244,246,249,0.65); backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); padding-top:calc(15px + env(safe-area-inset-top)); padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.3); flex-shrink:0; }
 .header{text-align:center;margin-bottom:10px;width:100%}
 .header h1{color:var(--s);font-size:22px}
