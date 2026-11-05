@@ -1,0 +1,14 @@
+{
+	"appId": "com.mydream.fund",
+	"appName": "lucky",
+	"webDir": "www",
+	"ios": {
+		"contentInset": "always"
+	},
+	"plugins": {
+		"Haptics": {}
+	},
+	"packageClassList": [
+		"HapticsPlugin"
+	]
+}
