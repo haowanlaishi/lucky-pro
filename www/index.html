@@ -641,6 +641,11 @@ window.copyToOther = item => {
 function renderList(){
   const isStar = state.view === 'star'; const sourceList = isStar ? state.starList : state.list;
   const d = sourceList.filter(i=>i.type===state.type&&i.mode===state.mode);
+  // 重建前清掉旧卡片的滑动状态，避免残留
+  hl.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el => {
+    el.classList.remove('swiped-left','swiped-right');
+    el.style.transform = '';
+  });
   ht.innerText = LOT[state.type].name + (isStar ? '选号收藏' : '选号记录');
   updateBadge(); updateAppendBtn(); cp.classList.toggle('show',d.length>0);
   let total=0; d.forEach(i=>{if(i.price)total+=i.price;});
@@ -1065,17 +1070,20 @@ let isThrottled = false; // 锁定状态标志
 scrollContainer.addEventListener('scroll', () => {
   let st = scrollContainer.scrollTop;
   
-  // 如果还在锁定期内，只更新位置，不触发任何显示/隐藏逻辑
+    // 如果还在锁定期内，不更新 lastScrollTop，避免解锁后方向判断失真
   if (isThrottled) {
-    lastScrollTop = st;
     return;
   }
 
   // 向上滑动，距离超过 50px，立刻隐藏并锁定 300ms
   if (st > lastScrollTop && st > 50) {
     bottomBtns.classList.add('hide-bar');
-    isThrottled = true;
-    setTimeout(() => { isThrottled = false; }, 300); 
+        isThrottled = true;
+    setTimeout(() => {
+      isThrottled = false;
+      // 解锁时用当前滚动位置重新初始化，避免用节流期间的旧值比较
+      lastScrollTop = scrollContainer.scrollTop;
+    }, 300);  
   } 
   // 向下滑动，立刻显示
   else if (st < lastScrollTop) {
