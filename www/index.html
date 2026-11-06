@@ -6,18 +6,11 @@
 <style>
 :root{--p:#e63946;--s:#1d3557;--bg:#f4f6f9;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;--gl:#f9c74f}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html {
-  height: 100%;
-  height: 100dvh;
-  background-color: #f4f6f9; /* 👈 锁定底层背景色 */
-}
-body { 
+html, body { 
   height: 100%; 
-  height: 100dvh; 
+  height: 100dvh; /* 👈 动态视口高度，解决锁屏/地址栏变化导致的高度跳变 */
   overflow: hidden; 
-  background-color: #f4f6f9 !important; 
-  /* 👈 强制给 body 加上安全区 padding 并填充灰色，覆盖系统白底 */
-  padding-bottom: env(safe-area-inset-bottom); 
+  background: #f4f6f9; 
   position: relative; 
   font-family: -apple-system, sans-serif; 
   color: #333; 
@@ -148,8 +141,7 @@ body {
 .ctx-menu-item.copy { color: #1d3557; }
 .ctx-menu-item.fill { color: #e63946; }
 /* 👈 优化：让长按卡片的缩放动画像果冻一样丝滑（使用了和机选按钮同款的贝塞尔曲线） */
-/* 👈 新增：记录列表里的金球不播放动画，防止滚动卡顿 */
-.hi .ball.lucky { animation: none !important; }
+
 .sc.pressing { 
   transform: scale(0.95) translateY(-4px) !important; /* 缩小并轻微上浮 */
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important; /* 加强投影 */
@@ -165,21 +157,7 @@ body {
   -webkit-user-select: none !important;
   user-select: none !important;
 }
-/* 👈 新增：斐波那契螺旋展开动画 */
-@keyframes spiral-in {
-  0% {
-    transform: scale(0) rotate(-180deg);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.15) rotate(10deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
+
 /* 👈 终极防长按选中：把按钮、选号球、顶部导航全部锁死 */
 .btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb {
   -webkit-touch-callout: none !important; /* 禁用长按弹出系统菜单 */
@@ -208,6 +186,7 @@ body {
 </div>
 
 <script>
+let isMenuLocked = false; // 👈 新增：菜单防穿透锁
 function playFeedback() {
   // 1. 尝试 Capacitor 原生震动（如果将来用 Capacitor 打包）
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
@@ -612,9 +591,9 @@ function buildCopyText(){
     if (allSame) {
       // 如果所有记录都一样，提取第一条生成单行格式
       let oneLine = '';
-      if (state.type === 'qxc') {
+            if (state.type === 'qxc') {
         const front = d[0].numbers['orange'].map(n=>n.toString()).join('  ');
-        const back = d[0].numbers['blue'].map(n=>(n<10?'0'+n:n)).join('  ');
+        const back = d[0].numbers['blue'].map(n=>n.toString()).join('  '); // 👈 去掉了补零
         oneLine = front + '  +  ' + back;
       } else {
         const fg = cfg.groups[0], bg = cfg.groups[1];
@@ -629,12 +608,13 @@ function buildCopyText(){
   }
 
   // 👇 如果不满足合并条件，完全走你原本的多行输出逻辑（未做任何改动）
-  const lines = d.map(item => {
+    const lines = d.map(item => {
     if(item.type==='qxc'){
       const front=item.numbers['orange'].map(n=>n.toString()).join('  ');
-      const back=item.numbers['blue'].map(n=>(n<10?'0'+n:n)).join('  ');
+      const back=item.numbers['blue'].map(n=>n.toString()).join('  '); // 👈 这里去掉了补零
       return front+'  +  '+back;
     }else{
+      // 👇 原封不动：双色球大乐透依然用 pad2
       const fg=cfg.groups[0],bg=cfg.groups[1];
       const front=[...item.numbers[fg.id]].sort((a,b)=>a-b).map(pad2).join('  ');
       const back=[...item.numbers[bg.id]].sort((a,b)=>a-b).map(pad2).join('  ');
@@ -752,10 +732,19 @@ function renderList(){
 
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
+  // 👈 如果菜单刚关，50ms内不响应滑动
+  // (配合后面 setTimeout 解锁)
   let pressTimer = null;
   item._isLongPressed = false;
 
-  item.addEventListener('touchstart',e=>{
+    item.addEventListener('touchstart',e=>{
+    // 👈 如果刚关了菜单，这 50ms 内拦截卡片的触摸（防止幽灵点击穿透）
+    if (isMenuLocked) {
+      // 延迟 50ms 解锁，然后直接 return 挡掉这次点击
+      setTimeout(() => { isMenuLocked = false; }, 50);
+      return; 
+    }
+
     // 只有单式、且不是收藏面板，才允许长按
     const allowLongPress = (state.view !== 'star') && (state.mode === 'single');
     
@@ -811,6 +800,7 @@ function bindSwipe(item){
         menu.style.top = top + 'px';
         menu.style.left = left + 'px';
         
+                isMenuLocked = true; // 👈 菜单弹出时上锁
         overlay.classList.add('show');
         menu.classList.add('show');
         
@@ -835,6 +825,7 @@ function bindSwipe(item){
         
         // 改用 touchstart，手指碰触瞬间即刻触发，无视系统吞噬
         newCopy.addEventListener('touchstart', (ev) => {
+          isMenuLocked = false; // 👈 解锁
           ev.stopPropagation();
           ev.preventDefault();
           overlay.classList.remove('show');
@@ -1124,8 +1115,7 @@ btnRandom.addEventListener('touchstart', (e) => {
       state.sel[cfg.groups[0].id] = getFibonacciLuckyNumbers(cfg.groups[0].count, cfg.groups[0].max);
       state.sel[cfg.groups[1].id] = getFibonacciLuckyNumbers(cfg.groups[1].count, cfg.groups[1].max);
     }
-    render();
-    toast('✨ 斐波那契螺旋已展开！');
+        render();
   }, 500);
 }, {passive: true});
 
@@ -1171,6 +1161,7 @@ $('cb').onclick=()=>{
   const isStar = state.view === 'star';
   const viewName = isStar ? '收藏' : '记录';
   if(confirm('确定要清空所有【'+LOT[state.type].name+'】的' + viewName + '吗？')){
+    playFeedback(); // 👈 新增：清空时触发震动反馈
     if (isStar) {
       state.starList = state.starList.filter(i=>i.type!==state.type);
     } else {
@@ -1244,6 +1235,7 @@ document.getElementById('ctx-overlay').addEventListener('touchstart', function(e
   e.preventDefault();
   e.stopPropagation();
   
+  isMenuLocked = false; // 👈 关闭菜单时解锁
   // 只要点到这层遮罩，直接关闭菜单和遮罩，并恢复卡片状态
   this.classList.remove('show');
   document.getElementById('ctx-menu').classList.remove('show');
