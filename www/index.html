@@ -4,162 +4,169 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>千万梦想基金</title>
 <style>
-:root{--p:#e63946;--s:#1d3557;--bg:#f4f6f9;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;--gl:#f9c74f}
+:root{
+  --p:#e63946;--s:#1d3557;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;
+  /* 语义变量（浅色） */
+  --bg-page:#f4f6f9;--bg-card:#fff;--bg-input:#f8f9fa;
+  --text-main:#333;--text-sub:#888;--text-light:#aaa;
+  --border:#e0e0e0;--shadow:rgba(0,0,0,0.05);
+  --glass-page:rgba(244,246,249,0.78);--glass-bg:rgba(255,255,255,0.8);--glass-btn:rgba(255,255,255,0.72);--glass-btn-strong:rgba(255,255,255,0.6);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg-page:#1c1c1e;--bg-card:#2c2c2e;--bg-input:#3a3a3c;
+    --text-main:#f2f2f7;--text-sub:#98989d;--text-light:#636366;
+    --border:#38383a;--shadow:rgba(0,0,0,0.4);
+    --glass-page:rgba(28,28,30,0.78);--glass-bg:rgba(44,44,46,0.8);--glass-btn:rgba(44,44,46,0.72);--glass-btn-strong:rgba(44,44,46,0.6);
+  }
+  
+  /* 1. 选号球和选中区 */
+  .nb { background: var(--bg-input) !important; border-color: #48484a !important; color: var(--text-sub); }
+  .nb.qf { color: #c0c0ff !important; border-color: #5c5c99 !important; }
+  .ps.as { background: rgba(255,255,255,0.06) !important; border-color: rgba(255,255,255,0.15) !important; }
+  
+  /* 2. 边框弱化 */
+  .top-sticky-wrapper{border-bottom-color:rgba(255,255,255,0.08);}
+  .hp{border-color:rgba(255,255,255,0.08);}
+  .tabs{border-color:rgba(255,255,255,0.1);}
+  .btn.br{border-color:rgba(255,255,255,0.1);}
+  .header h1 { color: var(--text-sub); }
+
+  /* 3. 彻底干掉深蓝：Tab 和记录选中态改为深灰底 + 纯白字 */
+  .tab.active { 
+    background: #38383a !important; 
+    color: #ffffff !important; 
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
+  }
+  .hb.active { 
+    background: #38383a !important; 
+    color: #ffffff !important; 
+    border-color: rgba(255,255,255,0.1) !important; 
+  }
+
+  /* 4. 长按菜单的“复制” */
+    /* 👈 修复长按菜单的字色，确保在深色背景下清晰可见 */
+  .ctx-menu-item.copy { color: #f2f2f7 !important; }  /* 复制：改为纯白，最清晰 */
+  .ctx-menu-item.fill { color: #ff6b6b !important; }  /* 回填：改为亮红，醒目 */
+  .ctx-menu-item:last-child { color: #98989d !important; } /* 取消：次级灰，拉开层次 */ 
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html, body { 
-  height: 100%; 
-  height: 100dvh; /* 👈 动态视口高度，解决锁屏/地址栏变化导致的高度跳变 */
-  overflow: hidden; 
-  background: #f4f6f9; 
-  position: relative; 
-  font-family: -apple-system, sans-serif; 
-  color: #333; 
-}
-.app-scroll { 
-  height: 100%; 
-  height: 100dvh; /* 👈 撑满全屏 */
-  overflow-y: auto; 
-  -webkit-overflow-scrolling: touch; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  /* 👈 强制底部留出 60px 空间，防止内容被底栏遮挡，同时不留白 */
-  padding: 0 15px calc(60px + env(safe-area-inset-bottom)) 15px; 
-  box-sizing: border-box; 
-  background: #f4f6f9; 
-  -webkit-transform: translate3d(0, 0, 0); 
-  transform: translate3d(0, 0, 0); 
-  will-change: transform; 
-}
-.top-sticky-wrapper{ position:-webkit-sticky; position:sticky; top:0; z-index:1000; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; background:rgba(244,246,249,0.85); /* 👈 提高不透明度，防止锁屏唤醒后状态栏文字看不清 */ backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); padding-top:calc(15px + env(safe-area-inset-top)); padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.3); flex-shrink:0; }
+html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg-page); position: relative; font-family: -apple-system, sans-serif; color: var(--text-main); }
+.app-scroll { height: 100%; height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; padding: 0 15px calc(60px + env(safe-area-inset-bottom)) 15px; box-sizing: border-box; background: var(--bg-page); -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); will-change: transform; }
+.top-sticky-wrapper{ position:-webkit-sticky; position:sticky; top:0; z-index:1000; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; background:var(--glass-page); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding-top:calc(15px + env(safe-area-inset-top)); padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.3); flex-shrink:0; }
 .header{text-align:center;margin-bottom:10px;width:100%}
-.header h1{color:var(--s);font-size:22px}
-.tabs{display:flex;background:rgba(255,255,255,0.6);border-radius:12px;padding:5px;box-shadow:0 2px 10px rgba(0,0,0,.05);width:100%;margin-bottom:5px;border:1px solid rgba(255,255,255,0.5)}
-.tab{flex:1;text-align:center;padding:10px 0;font-size:14px;font-weight:bold;color:#666;border-radius:8px;cursor:pointer;transition:all .3s}
-.tab.active{background:var(--s);color:#fff;box-shadow:0 2px 8px rgba(29,53,87,0.3)}
+.header h1{color:var(--text-main);font-size:22px}
+.tabs{display:flex;background:var(--glass-btn-strong);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:12px;padding:5px;box-shadow:0 2px 10px var(--shadow);width:100%;margin-bottom:5px;border:1px solid rgba(255,255,255,0.5)}
+.tab{flex:1;text-align:center;padding:10px 0;font-size:14px;font-weight:bold;color:var(--text-sub);border-radius:8px;cursor:pointer;transition:all .3s}
+.tab.active{background:var(--s);color:#fff;box-shadow:0 2px 8px rgba(29,53,87,0.3);border:1px solid transparent;}
 .ab{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;width:100%;padding:5px 0;margin-bottom:5px}
-.ms{display:flex;gap:6px;align-items:center}.mb{background:rgba(255,255,255,0.8);border:1px solid var(--g);padding:5px 14px;border-radius:20px;font-size:13px;color:#666;cursor:pointer;font-weight:bold;backdrop-filter:blur(10px)}.mb.active{border-color:var(--p);color:var(--p);background:rgba(255,240,240,0.9)}.dv{width:1px;height:20px;background:rgba(0,0,0,0.1);margin:0 6px}.hb{background:rgba(255,255,255,0.8);color:#333;border:1px solid rgba(0,0,0,0.05);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;margin-left:auto;backdrop-filter:blur(10px);transition:background .15s,color .15s,border-color .15s}.hb.active{background:var(--s);color:#fff;border-color:transparent}.badge{background:var(--p);color:#fff;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%}.ap{display:none;align-items:center;gap:5px;background:transparent;border:none;padding:4px 4px;font-size:13px;font-weight:bold;color:#999;cursor:pointer;transition:all .2s;flex-shrink:0}.ap.show{display:inline-flex}.ap .c{width:16px;height:16px;border-radius:50%;border:2px solid #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;color:transparent;flex-shrink:0;transition:all .2s}.ap.ck{color:var(--gold)}.ap.ck .c{border-color:var(--gold);color:var(--gold)}
-.hp{display:none;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);width:100%;max-width:400px;border-radius:16px;padding:12px;box-shadow:0 8px 32px rgba(0,0,0,.05);margin-bottom:15px;border:1px solid rgba(255,255,255,0.6);flex-direction:column;gap:12px;transition:height .3s}
-.hp.show{display:flex;animation:sd .3s}@keyframes sd{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.hp.closing{animation:hp-close .12s ease forwards}
-@keyframes hp-close{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-8px)}}.hh{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:10px;flex-shrink:0;position:relative;gap:8px}.ht{font-size:14px;font-weight:bold;color:var(--s)}.ta{color:#d4a037;font-size:12px;font-weight:bold;background:#fffaf0;padding:2px 10px;border-radius:12px;border:1px solid #f6e0b5;white-space:nowrap;margin-left:auto}.ta span{font-size:13px;font-weight:900}.cp{display:none;align-items:center;background:transparent;border:none;padding:2px 4px;font-size:13px;font-weight:bold;color:var(--gold);cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}.cp.show{display:inline-flex}.cp:active{transform:scale(.92)}.cb{font-size:13px;color:#999;background:none;border:none;cursor:pointer}.hl{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.sc{position:relative;border-radius:8px;overflow:hidden;background:#fff;flex-shrink:0}
+.ms{display:flex;gap:6px;align-items:center}
+.mb{background:var(--glass-btn);border:1px solid var(--border);padding:5px 14px;border-radius:20px;font-size:13px;color:var(--text-sub);cursor:pointer;font-weight:bold;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.mb.active{border-color:var(--p);color:var(--p);background:rgba(255,240,240,0.9)}
+.dv{width:1px;height:20px;background:rgba(0,0,0,0.1);margin:0 6px}
+.hb{background:var(--glass-btn);color:var(--text-main);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;margin-left:auto;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .15s,color .15s,border-color .15s}
+.hb.active{background:var(--s);color:#fff;border-color:transparent}
+.badge{background:var(--p);color:#fff;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.ap{display:none;align-items:center;gap:5px;background:transparent;border:none;padding:4px 4px;font-size:13px;font-weight:bold;color:#999;cursor:pointer;transition:all .2s;flex-shrink:0}
+.ap.show{display:inline-flex}
+.ap .c{width:16px;height:16px;border-radius:50%;border:2px solid #bbb;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;color:transparent;flex-shrink:0;transition:all .2s}
+.ap.ck{color:var(--gold)}
+.ap.ck .c{border-color:var(--gold);color:var(--gold)}
+.hp{display:none;background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);width:100%;max-width:400px;border-radius:16px;padding:12px;box-shadow:0 8px 32px var(--shadow);margin-bottom:15px;border:1px solid rgba(255,255,255,0.6);flex-direction:column;gap:12px;transition:height .3s}
+.hp.show{display:flex;animation:sd .3s}
+@keyframes sd{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.hp.closing{animation:hp-close .12s ease forwards}
+@keyframes hp-close{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-8px)}}
+.hh{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px;flex-shrink:0;position:relative;gap:8px}
+.ht{font-size:14px;font-weight:bold;color:var(--text-main)}
+.ta{color:#d4a037;font-size:12px;font-weight:bold;background:#fffaf0;padding:2px 10px;border-radius:12px;border:1px solid #f6e0b5;white-space:nowrap;margin-left:auto}
+.ta span{font-size:13px;font-weight:900}
+.cp{display:none;align-items:center;background:transparent;border:none;padding:2px 4px;font-size:13px;font-weight:bold;color:var(--gold);cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.cp.show{display:inline-flex}
+.cp:active{transform:scale(.92)}
+.cb{font-size:13px;color:var(--text-light);background:none;border:none;cursor:pointer}
+.hl{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.sc{position:relative;border-radius:8px;overflow:hidden;background:var(--bg-card);flex-shrink:0}
 .sa{position:absolute;top:0;bottom:0;width:70px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;z-index:1;color:#fff;}
 .sa-right{right:0;background:#ff4d4f;}
 .sa-left{left:0;background:#52c41a;}
-.hi{display:flex;flex-wrap:nowrap;justify-content:center;gap:6px;padding:10px 6px;background:#fff;position:relative;align-items:center;transition:transform .3s cubic-bezier(.25,.8,.25,1);z-index:2;width:100%;touch-action:pan-y;flex-direction:column}
+.hi{display:flex;flex-wrap:nowrap;justify-content:center;gap:6px;padding:10px 6px;background:var(--bg-card);position:relative;align-items:center;transition:transform .3s cubic-bezier(.25,.8,.25,1);z-index:2;width:100%;touch-action:pan-y;flex-direction:column}
 .hi.swiped-left{transform:translateX(-70px)}
 .hi.swiped-right{transform:translateX(70px)}
-.hi .ball{width:38px;height:38px;font-size:17px;flex-shrink:0}.rw{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;width:100%}.vl{width:2px;height:24px;background:linear-gradient(to bottom,transparent,#ccc,transparent);margin:0 4px;border-radius:1px}.hi.ml{padding:12px 8px;display:block}.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:8px 2px;width:100%;align-items:center}.mg .ball.front{justify-self:start}.mg .ball.back{justify-self:end}
-.panel{background:#fff;width:100%;max-width:400px;border-radius:16px;padding:15px;box-shadow:0 4px 12px rgba(0,0,0,.05);display:flex;flex-direction:column;margin-bottom:20px}.panel.hidden{display:none}.rd{font-size:12px;color:#888;margin-bottom:15px;text-align:center}.ra{min-height:64px;display:flex;align-items:center;justify-content:center;position:relative;padding:10px 12px;background:#f8f9fa;border-radius:10px;margin-bottom:15px;gap:8px;width:100%;overflow:hidden;border:none}
-.bw{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%}.bw.multi-layout{flex-direction:row;align-items:flex-start;justify-content:flex-start}.bw.multi-layout .fw,.bw.multi-layout .bw2{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;width:100%}.bw.multi-layout .bw2{justify-content:flex-end;margin-top:6px}
+.hi .ball{width:38px;height:38px;font-size:17px;flex-shrink:0}
+.rw{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;width:100%}
+.vl{width:2px;height:24px;background:linear-gradient(to bottom,transparent,#ccc,transparent);margin:0 4px;border-radius:1px}
+.hi.ml{padding:12px 8px;display:block}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:8px 2px;width:100%;align-items:center}
+.mg .ball.front{justify-self:start}
+.mg .ball.back{justify-self:end}
+.panel{background:var(--bg-card);width:100%;max-width:400px;border-radius:16px;padding:15px;box-shadow:0 4px 12px var(--shadow);display:flex;flex-direction:column;margin-bottom:20px}
+.panel.hidden{display:none}
+.rd{font-size:12px;color:var(--text-sub);margin-bottom:15px;text-align:center}
+.ra{min-height:64px;display:flex;align-items:center;justify-content:center;position:relative;padding:10px 12px;background:var(--bg-input);border-radius:10px;margin-bottom:15px;gap:8px;width:100%;overflow:hidden;border:none}
+.bw{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;width:100%}
+.bw.multi-layout{flex-direction:row;align-items:flex-start;justify-content:flex-start}
+.bw.multi-layout .fw,.bw.multi-layout .bw2{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;width:100%}
+.bw.multi-layout .bw2{justify-content:flex-end;margin-top:6px}
 .ball{position:relative;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px;box-shadow:0 2px 5px rgba(0,0,0,.15);flex-shrink:0}
-.ball.red{background:var(--red)}.ball.blue{background:var(--blue)}.ball.orange{background:var(--orange)}.ball.qf{background:var(--qf)}.ball.qb{background:var(--qb)}
+.ball.red{background:var(--red)}
+.ball.blue{background:var(--blue)}
+.ball.orange{background:var(--orange)}
+.ball.qf{background:var(--qf)}
+.ball.qb{background:var(--qb)}
 .ball-lock{position:absolute;top:-2px;right:-2px;font-size:11px;color:#ffd700;text-shadow:0 0 2px #000;pointer-events:none;z-index:2;}
-.qp{display:flex;gap:6px;justify-content:center;margin-bottom:15px;flex-wrap:wrap;align-items:center;min-height:64px;padding:10px 12px;background:#f8f9fa;border-radius:10px;border:none}.qg{display:flex;gap:6px;align-items:center}.qd{width:1px;height:20px;background:#ddd;margin:0 4px}.pb{position:relative;width:34px;height:34px;border-radius:50%;border:2px dashed var(--g);display:flex;align-items:center;justify-content:center;font-weight:bold;color:#999;cursor:pointer;transition:all .2s;font-size:16px}.pb.active{border-color:var(--p);border-style:solid;background:#fff0f0;color:var(--p);transform:scale(1.1)}.pb.fqf{background:var(--qf);border:none;color:#fff}.pb.fqb{background:var(--qb);border:none;color:#fff}
+.qp{display:flex;gap:6px;justify-content:center;margin-bottom:15px;flex-wrap:wrap;align-items:center;min-height:64px;padding:10px 12px;background:var(--bg-input);border-radius:10px;border:none}
+.qg{display:flex;gap:6px;align-items:center}
+.qd{width:1px;height:20px;background:var(--border);margin:0 4px}
+.pb{position:relative;width:34px;height:34px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--text-light);cursor:pointer;transition:all .2s;font-size:16px}
+.pb.active{border-color:var(--p);border-style:solid;background:#fff0f0;color:var(--p);transform:scale(1.1)}
+.pb.fqf{background:var(--qf);border:none;color:#fff}
+.pb.fqb{background:var(--qb);border:none;color:#fff}
 .pb-lock{position:absolute;top:-2px;right:-2px;font-size:11px;color:#ffd700;text-shadow:0 0 2px #000;pointer-events:none;z-index:2;}
-.pa{margin-bottom:15px}.ps{margin-bottom:15px;padding:10px;border-radius:12px;border:1px solid transparent;transition:all .3s}.ps.as{background:rgba(253,251,247,0.8);border-color:#f9c74f}.pt{font-size:13px;color:#555;margin-bottom:8px;font-weight:bold;text-align:center}.ng{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.nb{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.8);border:1px solid var(--g);font-size:14px;color:#333;cursor:pointer;transition:all .1s}.nb:active{transform:scale(.9)}.nb.sel.red{background:var(--red);color:#fff;border:none;box-shadow:none}.nb.sel.blue{background:var(--blue);color:#fff;border:none;box-shadow:none}.nb.sel.orange{background:var(--orange);color:#fff;border:none;box-shadow:none}.nb.qf{border-color:#c0c0d9;color:#2d2d6b}.nb.qb{border-color:#e6d3a3;color:#b07d1a}
+.pa{margin-bottom:15px}
+.ps{margin-bottom:15px;padding:10px;border-radius:12px;border:1px solid transparent;transition:all .3s}
+.ps.as{background:rgba(253,251,247,0.8);border-color:#f9c74f}
+.pt{font-size:13px;color:var(--text-sub);margin-bottom:8px;font-weight:bold;text-align:center}
+.ng{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.nb{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.8);border:1px solid var(--border);font-size:14px;color:var(--text-main);cursor:pointer;transition:all .1s}
+.nb:active{transform:scale(.9)}
+.nb.sel.red{background:var(--red);color:#fff;border:none;box-shadow:none}
+.nb.sel.blue{background:var(--blue);color:#fff;border:none;box-shadow:none}
+.nb.sel.orange{background:var(--orange);color:#fff;border:none;box-shadow:none}
+.nb.qf{border-color:#c0c0d9;color:#2d2d6b}
+.nb.qb{border-color:#e6d3a3;color:#b07d1a}
 .nb-lock{position:absolute;top:-2px;right:-2px;font-size:10px;color:#ffd700;text-shadow:0 0 2px #000;pointer-events:none;z-index:2;}
 .ng.qbg{grid-template-columns:repeat(5,1fr)}
-.btns{
-  position:fixed;
-  /* 👈 从 20px 降到 5px，贴底更近 */
-  bottom: calc(10px + env(safe-area-inset-bottom)); 
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:12px;
-  width:90%;
-  max-width:380px;
-  z-index:999;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-.btns.hide-bar { 
-  /* 👈 把 150% 改成 300%，确保下滑彻底消失 */
-  transform: translate(-50%, 400%) !important; 
-}
+.btns{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:12px;width:90%;max-width:380px;z-index:999;transition:transform 0.3s cubic-bezier(0.25,0.8,0.25,1);}
+.btns.hide-bar{transform:translate(-50%,400%) !important;}
 .btn{flex:1;border:none;border-radius:30px;padding:15px 0;font-size:16px;font-weight:bold;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn.br{background:rgba(255,255,255,0.65);color:#333;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 8px 20px rgba(0,0,0,0.06);border:1px solid rgba(255,255,255,0.4);}
+.btn.br{background:var(--glass-btn-strong);color:var(--text-main);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 8px 20px var(--shadow);border:1px solid rgba(255,255,255,0.4);}
 .btn.bs{background:linear-gradient(135deg,#f4a261,#e76f51);color:#fff;box-shadow:0 6px 15px rgba(231,111,81,0.4);}
 .btn:active{transform:scale(0.95);}
-.et{text-align:center;color:#aaa;font-size:13px;padding:15px 0}.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100}
+.et{text-align:center;color:var(--text-light);font-size:13px;padding:15px 0}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100}
 @keyframes jelly-pop { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 70% { transform: scale(0.95); } 100% { transform: scale(1); } }
 .nb.pop-anim { animation: jelly-pop 0.3s ease-in-out !important; }
-.btn.br.pressing { transform: scale(0.95); background: rgba(245, 230, 200, 0.9); border-color: #f9c74f; }
+.btn.br.pressing { transform: scale(0.95); background: rgba(245,230,200,0.9); border-color: #f9c74f; }
 .btn.br.flash { animation: btnFlash 0.3s ease-out; }
-/* 👈 新增：确认选号按钮的按压与闪光 */
 .btn.bs.pressing { transform: scale(0.95); opacity: 0.85; }
 .btn.bs.flash { animation: btnFlashOrange 0.4s ease-out; }
-@keyframes btnFlashOrange { 
-  0% { box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.8); } 
-  100% { box-shadow: 0 0 0 25px rgba(231, 111, 81, 0); } 
-}
-@keyframes btnFlash { 0% { box-shadow: 0 0 0 0 rgba(249, 199, 79, 0.7); } 100% { box-shadow: 0 0 0 20px rgba(249, 199, 79, 0); } }
-.ball.lucky, .nb.lucky, .pb.lucky { 
-  background: #d4a037 !important; 
-  color: #fff !important; 
-  border: none !important; 
-}
-.ctx-menu-overlay { 
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-  background: rgba(0,0,0,0.1); z-index: 2000; 
-  display: none; opacity: 0; transition: opacity 0.2s; 
-  pointer-events: none;
-  touch-action: none; /* 👈 核心新增：禁止被穿到底层滚动 */
-}
-.ctx-menu-overlay.show { 
-  display: block; opacity: 1; 
-  pointer-events: auto; /* 👈 显示时才拦截点击 */
-}
-
-.ctx-menu { 
-  position: fixed; 
-  background: #fff; 
-  border-radius: 12px; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-  display: none; 
-  flex-direction: column; 
-  overflow: hidden; 
-  width: 120px; 
-  z-index: 2001; 
-  pointer-events: auto;
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.15s, transform 0.15s;
-}
-.ctx-menu.show { 
-  display: flex; 
-  opacity: 1; 
-  transform: scale(1); 
-} /* 只有加上 show 类才显示 */
-.ctx-menu-item { padding: 12px 15px; font-size: 14px; color: #333; font-weight: bold; text-align: center; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
-.ctx-menu-item:last-child { border-bottom: none; color: #999; }
-.ctx-menu-item:active { background: #f5f6f9; }
-.ctx-menu-item.copy { color: #1d3557; }
-.ctx-menu-item.fill { color: #e63946; }
-/* 👈 优化：让长按卡片的缩放动画像果冻一样丝滑（使用了和机选按钮同款的贝塞尔曲线） */
-
-.sc.pressing { 
-  transform: scale(0.95) translateY(-4px) !important; /* 缩小并轻微上浮 */
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important; /* 加强投影 */
-  z-index: 10; /* 浮在兄弟节点之上 */
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease !important; 
-  overflow: hidden; 
-}
-.hi, .nb, .hi *,
-.sc, .sc *, .hl, .hl *,
-.rw, .rw *, .ball, .ball *,
-.vl, .mg, .mg * {
-  -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important;
-  user-select: none !important;
-}
-
-/* 👈 终极防长按选中：把按钮、选号球、顶部导航全部锁死 */
-.btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb {
-  -webkit-touch-callout: none !important; /* 禁用长按弹出系统菜单 */
-  -webkit-user-select: none !important;   /* 禁用文字选中 */
-  user-select: none !important;
-}
+@keyframes btnFlashOrange { 0% { box-shadow: 0 0 0 0 rgba(231,111,81,0.8); } 100% { box-shadow: 0 0 0 25px rgba(231,111,81,0); } }
+@keyframes btnFlash { 0% { box-shadow: 0 0 0 0 rgba(249,199,79,0.7); } 100% { box-shadow: 0 0 0 20px rgba(249,199,79,0); } }
+.ball.lucky, .nb.lucky, .pb.lucky { background: #d4a037 !important; color: #fff !important; border: none !important; }
+.ctx-menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.1); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; pointer-events: none; touch-action: none; }
+.ctx-menu-overlay.show { display: block; opacity: 1; pointer-events: auto; }
+.ctx-menu { position: fixed; background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 30px var(--shadow); display: none; flex-direction: column; overflow: hidden; width: 120px; z-index: 2001; pointer-events: auto; opacity: 0; transform: scale(0.96); transition: opacity 0.15s, transform 0.15s; }
+.ctx-menu.show { display: flex; opacity: 1; transform: scale(1); }
+.ctx-menu-item { padding: 12px 15px; font-size: 14px; color: var(--text-main); font-weight: bold; text-align: center; cursor: pointer; border-bottom: 1px solid var(--border); }
+.ctx-menu-item:last-child { border-bottom: none; color: var(--text-light); }
+.ctx-menu-item:active { background: rgba(0,0,0,0.03); }
+.ctx-menu-item.copy { color: var(--s); }
+.ctx-menu-item.fill { color: var(--p); }
+.sc.pressing { transform: scale(0.95) translateY(-4px) !important; box-shadow: 0 12px 30px var(--shadow) !important; z-index: 10; transition: transform 0.3s cubic-bezier(0.25,0.8,0.25,1), box-shadow 0.3s ease !important; overflow: hidden; }
+.hi, .nb, .hi *, .sc, .sc *, .hl, .hl *, .rw, .rw *, .ball, .ball *, .vl, .mg, .mg * { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
+.btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
 </style></head>
 <body>
 <div class="app-scroll">
@@ -171,7 +178,6 @@ html, body {
   <div class="hp" id="hp"><div class="hh"><div class="ht" id="ht">选号记录</div><button class="cp" id="cp">复制</button><div class="ta" id="ta" style="display:none;">总计 <span id="tv">0</span> 元</div><button class="cb" id="cb">清空</button></div><div class="hl" id="hl"></div></div>
   <div class="panel" id="mp"><div class="rd" id="rd"></div><div class="ra" id="ra"></div><div class="qp" id="qp" style="display:none"></div><div class="pa" id="pa"></div></div>
 </div>
-
 <div class="btns" id="bottom-btns"><button class="btn br" id="rb">🎲 机选填满</button><button class="btn bs" id="cf">✅ 确认选号</button></div>
 <div class="toast" id="toast">提示</div>
 <div class="ctx-menu-overlay" id="ctx-overlay"></div>
@@ -180,20 +186,15 @@ html, body {
   <div class="ctx-menu-item fill" id="ctx-fill">回填</div>
   <div class="ctx-menu-item cancel" id="ctx-cancel">取消</div>
 </div>
-
 <script>
-let isMenuLocked = false; // 👈 新增：菜单防穿透锁
+let isMenuLocked = false;
 function playFeedback() {
-  // 1. 尝试 Capacitor 原生震动（如果将来用 Capacitor 打包）
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
     window.Capacitor.Plugins.Haptics.impact({ style: 'HEAVY' }).catch(() => {});
-  } 
-  // 2. 降级到普通浏览器的震动
-  else if (navigator.vibrate) {
+  } else if (navigator.vibrate) {
     navigator.vibrate(15);
   }
 }
-
 function getFibonacciLuckyNumbers(count, maxNum) {
   let timestamp = Date.now();
   const nums = [];
@@ -219,7 +220,6 @@ const LOT={
     {id:'blue',name:'后区',count:1,min:0,max:14,colorClass:'qb'}
   ],base:2}
 };
-
 let state={
   type:'ssq', mode:'single', sel:{}, locked:{}, hasTriggerRandom:false,
   qxcLocked:[false,false,false,false,false,false,false], qxcActive:{group:'orange',pos:0},
@@ -227,16 +227,13 @@ let state={
   starList:JSON.parse(localStorage.getItem('solo_lotto_star_v24')||'[]'),
   view: 'list', isLucky: false
 };
-
 const modeCache = { ssq: 'single', dlt: 'single' };
 const modeSelCache = {
   ssq: { single: { sel: {}, locked: {} }, multi: { sel: {}, locked: {} } },
   dlt: { single: { sel: {}, locked: {} }, multi: { sel: {}, locked: {} } }
 };
-
 const $=id=>document.getElementById(id);
 const ra=$('ra'),qp=$('qp'),pa=$('pa'),rd=$('rd'),te=$('toast'),hp=$('hp'),hl=$('hl'),badge=$('badge'),hb=$('hb'),ht=$('ht'),mp=$('mp'),ta=$('ta'),tv=$('tv'),ap=$('ap'),cp=$('cp');
-
 function initState(){
   state.sel={}; state.locked={}; state.hasTriggerRandom=false;
   state.qxcLocked=[false,false,false,false,false,false,false];
@@ -248,7 +245,6 @@ function initState(){
     state.qxcActive={group:'orange',pos:0};
   }
 }
-
 function toast(m){ te.innerText=m;te.style.opacity=1; setTimeout(()=>{te.style.opacity=0},2000); }
 function comb(n,k){ if(k<0||k>n)return 0; let r=1; for(let i=1;i<=k;i++) r=r*(n-i+1)/i; return Math.round(r); }
 function calcBets(){
@@ -275,7 +271,6 @@ function createBall(num, colorClass, isLocked=false){
   return d;
 }
 function renderHeaderTip(cfg){ rd.innerText=cfg.desc; }
-
 function renderNormalPreview(cfg){
   ra.innerHTML='';
   const wrap=document.createElement('div'); wrap.className='bw'; ra.appendChild(wrap);
@@ -308,7 +303,6 @@ function renderNormalPreview(cfg){
     });
   }
 }
-
 function renderQxcPreview(){
   qp.innerHTML='';
   const wrap=document.createElement('div'); wrap.className='bw';
@@ -347,13 +341,11 @@ function renderQxcPreview(){
   };
   bg.appendChild(b); wrap.appendChild(bg); qp.appendChild(wrap);
 }
-
 function renderPreviewArea(cfg){
   ra.innerHTML=''; qp.innerHTML='';
   if(state.type==='qxc'){ ra.style.display='none'; qp.style.display='flex'; renderQxcPreview(); }
   else{ qp.style.display='none'; ra.style.display='flex'; renderNormalPreview(cfg); }
 }
-
 function renderNormalSelectGrid(cfg){
   pa.innerHTML='';
   cfg.groups.forEach(g=>{
@@ -361,7 +353,7 @@ function renderNormalSelectGrid(cfg){
     gd.innerHTML='<div class="pt">'+g.name+' (至少 '+g.count+' 个)</div>';
     const grid=document.createElement('div'); grid.className='ng';
     for(let i=g.min;i<=g.max;i++){
-      const b=document.createElement('div'); b.className='nb '+g.colorClass; b.innerText=pad2(i);
+            const b=document.createElement('div'); b.className='nb '+g.colorClass; b.innerText=pad2(i);
       if(state.sel[g.id].includes(i)) {
         b.classList.add('sel');
         if (state.isLucky) b.classList.add('lucky');
@@ -375,7 +367,6 @@ function renderNormalSelectGrid(cfg){
     gd.appendChild(grid); pa.appendChild(gd);
   });
 }
-
 function renderQxcSelectGrid(){
   pa.innerHTML='';
   const os=document.createElement('div'); os.className='ps'+(state.qxcActive.group==='orange'?' as':'');
@@ -383,7 +374,7 @@ function renderQxcSelectGrid(){
   const og=document.createElement('div'); og.className='ng';
   for(let i=0;i<=9;i++){
     const b=document.createElement('div'); b.className='nb qf'; b.innerText=i;
-    
+    if (state.isLucky) b.classList.add('lucky');
     b.onclick=()=>{
       if(state.qxcActive.group!=='orange') state.qxcActive={group:'orange',pos:0};
       state.sel['orange'][state.qxcActive.pos]=i;
@@ -400,7 +391,7 @@ function renderQxcSelectGrid(){
   const bg2=document.createElement('div'); bg2.className='ng qbg';
   for(let i=0;i<=14;i++){
     const b=document.createElement('div'); b.className='nb qb'; b.innerText=pad2(i);
-    
+    if (state.isLucky) b.classList.add('lucky');
     b.onclick=()=>{
       state.qxcActive={group:'blue',pos:0}; state.sel['blue'][0]=i; state.qxcLocked[6]=true; render();
     };
@@ -408,16 +399,13 @@ function renderQxcSelectGrid(){
   }
   bs.appendChild(bg2); pa.appendChild(bs);
 }
-
 function render(){
   const cfg=LOT[state.type];
   renderHeaderTip(cfg); renderPreviewArea(cfg); renderSelectPanel(cfg);
 }
-
 function renderSelectPanel(cfg){
   if(state.type==='qxc'){ renderQxcSelectGrid(); } else { renderNormalSelectGrid(cfg); }
 }
-
 function handleSelect(g,num){
   state.isLucky = false;
   const cur=state.sel[g.id];
@@ -449,9 +437,8 @@ function handleSelect(g,num){
     });
   },10);
 }
-
 function randomFill(){
-state.isLucky = false; // 👈 加上这一行，普通机选绝不带金色  
+state.isLucky = false;
 const cfg=LOT[state.type];
   if(state.mode==='multi'){
     state.locked={}; state.hasTriggerRandom=false; state.qxcLocked=[false,false,false,false,false,false,false];
@@ -468,7 +455,6 @@ const cfg=LOT[state.type];
     }
     render(); return;
   }
-
   if(state.type==='qxc'){
     if(!state.hasTriggerRandom){
       for(let i=0;i<6;i++){ if(state.sel['orange'][i]!==null) state.qxcLocked[i]=true; }
@@ -481,7 +467,6 @@ const cfg=LOT[state.type];
     if(!state.qxcLocked[6]){ state.sel['blue'][0]=Math.floor(Math.random()*15); }
     render(); return;
   }
-
   const g1 = cfg.groups[0]; const g2 = cfg.groups[1];
   if(!state.locked[g1.id]) state.locked[g1.id]=[];
   if(!state.locked[g2.id]) state.locked[g2.id]=[];
@@ -493,10 +478,8 @@ const cfg=LOT[state.type];
   const g1AllLock = state.locked[g1.id].length >= g1.count;
   const g2AllLock = state.locked[g2.id].length >= g2.count;
   if(g1AllLock && g2AllLock){ toast('所有号码已手动锁定，无需机选填充'); render(); return; }
-  
   state.sel[g1.id] = [...state.locked[g1.id]];
   state.sel[g2.id] = [...state.locked[g2.id]];
-
   if(state.sel[g1.id].length < g1.count){
     let pool1=[];
     for(let i=g1.min;i<=g1.max;i++){ if(!state.locked[g1.id].includes(i)) pool1.push(i); }
@@ -511,7 +494,6 @@ const cfg=LOT[state.type];
   }
   render();
 }
-
 function confirmSel(){
   const cfg=LOT[state.type];
   let ok=true;
@@ -528,14 +510,13 @@ function confirmSel(){
     const rec={
       id:Date.now() + Math.floor(Math.random()*1000), type:state.type, mode:state.mode,
       numbers:JSON.parse(JSON.stringify(state.sel)), betCount:bets, price:price, isAppend:false,
-      isLucky: state.isLucky // 👈 存进记录里的金色标记
+      isLucky: state.isLucky
     };
     state.list.push(rec);
     save(); renderList(); updateBadge();
     toast('🎉 保存成功！金额：'+price+'元');
   }
 }
-
 function updateBadge(){
   const isStar = state.view === 'star';
   const sourceList = isStar ? state.starList : state.list;
@@ -543,14 +524,12 @@ function updateBadge(){
   const label = isStar ? '收藏 ' : '记录 ';
   const badgeEl = hb.querySelector('.badge');
   if (badgeEl && hb.firstChild && hb.firstChild.nodeType === 3) {
-    // 已有 badge 结构，只更新文字和数字，避免重建 DOM
     hb.firstChild.nodeValue = label;
     badgeEl.textContent = d.length;
   } else {
     hb.innerHTML = label + '<span class="badge" id="badge">'+d.length+'</span>';
   }
 }
-
 function updateAppendBtn(){
   if(state.type!=='dlt'||!hp.classList.contains('show')){ ap.classList.remove('show');ap.classList.remove('ck'); return; }
   ap.classList.add('show');
@@ -558,7 +537,6 @@ function updateAppendBtn(){
   const d=targetList.filter(i=>i.type==='dlt'); const all=d.length>0&&d.every(i=>i.isAppend);
   ap.classList.toggle('ck',all);
 }
-
 function toggleAppend(){
   const isStar = state.view === 'star'; const targetList = isStar ? state.starList : state.list;
   const d = targetList.filter(i=>i.type==='dlt');
@@ -567,7 +545,6 @@ function toggleAppend(){
   targetList.forEach(i=>{ if(i.type==='dlt'){ i.isAppend=t; i.price=i.betCount*(t?LOT.dlt.appendBase:LOT.dlt.base); } });
   save(); updateAppendBtn(); renderList(); toast(t?'已全部追加':'已取消追加');
 }
-
 function buildCopyText(){
   const isStar = state.view === 'star'; 
   const sourceList = isStar ? state.starList : state.list;
@@ -619,7 +596,6 @@ function buildCopyText(){
   
   return head+'\n'+lines.join('\n');
 }
-
 function fallbackCopy(text,done){
   const t=document.createElement('textarea');
   t.value=text; t.style.position='fixed'; t.style.top='-9999px'; t.style.opacity='0';
@@ -627,7 +603,6 @@ function fallbackCopy(text,done){
   let ok=false; try{ok=document.execCommand('copy');}catch(e){ok=false;}
   document.body.removeChild(t); if(ok) done(); else toast('复制失败，请重试');
 }
-
 function copyRecords(){
   const text=buildCopyText();
   if(!text){toast('暂无数据');return;}
@@ -635,20 +610,16 @@ function copyRecords(){
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done)); }
   else{ fallbackCopy(text,done); }
 }
-
 window.copyToOther = item => {
   const isStar = state.view === 'star'; const targetList = isStar ? state.list : state.starList;
   const newRec = JSON.parse(JSON.stringify(item)); newRec.id = Date.now() + Math.floor(Math.random()*1000);
   newRec.createdAt = Date.now();
   targetList.push(newRec); save(); toast(isStar ? '已加入记录' : '已加入收藏'); updateBadge();
 };
-
 function renderList(){
   const isStar = state.view === 'star'; const sourceList = isStar ? state.starList : state.list;
   const d = sourceList.filter(i=>i.type===state.type&&i.mode===state.mode);
-  // 记录滚动位置，重建后恢复，避免长按复制/删除后列表跳回顶部
   const prevScrollTop = hl.scrollTop;
-  // 重建前清掉旧卡片的滑动状态，避免残留
   hl.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el => {
     el.classList.remove('swiped-left','swiped-right');
     el.style.transform = '';
@@ -667,12 +638,12 @@ function renderList(){
     const sar=document.createElement('div');sar.className='sa sa-right';sar.innerText='删除'; sar.onclick=()=>delRec(item.id);
     const div=document.createElement('div');div.className='hi';
     let html='';
-        if(item.type==='qxc'){
-      const luckyCls = item.isLucky ? ' lucky' : ''; // 👈 新增：判断是否是幸运号码
+    if(item.type==='qxc'){
+      const luckyCls = item.isLucky ? ' lucky' : '';
       html='<div class="rw">'; 
-      item.numbers['orange'].forEach(n=>{html+='<div class="ball qf'+luckyCls+'">'+n+'</div>';}); // 👈 补上 luckyCls
+      item.numbers['orange'].forEach(n=>{html+='<div class="ball qf'+luckyCls+'">'+n+'</div>';});
       html+='<div class="vl"></div>'; 
-      item.numbers['blue'].forEach(n=>{html+='<div class="ball qb'+luckyCls+'">'+(n<10?'0'+n:n)+'</div>';}); // 👈 补上 luckyCls
+      item.numbers['blue'].forEach(n=>{html+='<div class="ball qb'+luckyCls+'">'+(n<10?'0'+n:n)+'</div>';});
       html+='</div>';
     }else{
       const cfg=LOT[item.type],fg=cfg.groups[0],bg=cfg.groups[1];
@@ -704,9 +675,7 @@ function renderList(){
         html+='</div>';
       }
     }
-    
     div.innerHTML=html;
-    
     if (isStar && item.createdAt) {
       const dt = new Date(item.createdAt);
       const timeStr = `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
@@ -715,100 +684,68 @@ function renderList(){
       timeDiv.style.cssText = 'position:absolute; bottom:2px; right:6px; font-size:10px; color:#d0d0d0; pointer-events:none; z-index:10;';
       div.appendChild(timeDiv);
     }
-
-        // 👈 新增：把原始数据挂载到 DOM 元素上，防止长按时丢失
-        div._itemData = JSON.parse(JSON.stringify(item)); 
-        bindSwipe(div); sc.appendChild(sal); sc.appendChild(sar); sc.appendChild(div); frag.appendChild(sc);
+    div._itemData = JSON.parse(JSON.stringify(item)); 
+    bindSwipe(div); sc.appendChild(sal); sc.appendChild(sar); sc.appendChild(div); frag.appendChild(sc);
   });
   hl.appendChild(frag);
-  // 恢复滚动位置
   hl.scrollTop = prevScrollTop;
 }
-
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
-  // 👈 如果菜单刚关，50ms内不响应滑动
-  // (配合后面 setTimeout 解锁)
   let pressTimer = null;
   item._isLongPressed = false;
 
-    item.addEventListener('touchstart',e=>{
-    // 👈 如果刚关了菜单，这 50ms 内拦截卡片的触摸（防止幽灵点击穿透）
+  item.addEventListener('touchstart',e=>{
     if (isMenuLocked) {
-      // 延迟 50ms 解锁，然后直接 return 挡掉这次点击
       setTimeout(() => { isMenuLocked = false; }, 50);
       return; 
     }
-
-    // 只有单式、且不是收藏面板，才允许长按
     const allowLongPress = (state.view !== 'star') && (state.mode === 'single');
-    
     if (item.classList.contains('swiped-left') || item.classList.contains('swiped-right')) return;
-    
     document.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el=>{ if(el!==item){ el.classList.remove('swiped-left','swiped-right'); el.style.transform=''; } });
-        sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
 
     if (allowLongPress) {
-                  pressTimer = setTimeout(() => {
-                item._isLongPressed = true;
-        // 阻止系统长按菜单（双保险，CSS 已覆盖大部分场景）
+      pressTimer = setTimeout(() => {
+        item._isLongPressed = true;
         if (e.cancelable) e.preventDefault();
         playFeedback();
         item.parentElement.classList.add('pressing');
-        
-                                const rect = item.getBoundingClientRect();
+        const rect = item.getBoundingClientRect();
         const menu = document.getElementById('ctx-menu');
         const overlay = document.getElementById('ctx-overlay');
-
         const menuH = 132;
         const menuW = 120;
-
         const gap = 6;  
         const screenH = window.innerHeight;
         const screenW = window.innerWidth;
-
-        // 👈 高级感数学补偿：因为卡片加了 scale(0.95) 和 translateY(-4px)
-        // 真实视觉边缘比 getBoundingClientRect 向内缩进了。
-        const scaleOffset = rect.height * 0.025; // 0.95 缩放导致上下各缩进 2.5%
-        const liftOffset = 4; // 上浮的 4px
-
+        const scaleOffset = rect.height * 0.025;
+        const liftOffset = 4;
         const actualTop = rect.top + scaleOffset - liftOffset; 
         const actualBottom = rect.bottom - scaleOffset - liftOffset;
-        const actualLeft = rect.left + (rect.width * 0.025); // 左侧向内缩进
-
-        // 垂直方向：卡片在下半屏 → 菜单在卡片上方；否则在卡片下方
+        const actualLeft = rect.left + (rect.width * 0.025);
         let top;
         if (actualTop > screenH / 2) {
-          top = actualTop - menuH - gap;  // 菜单底部贴悬浮卡片顶部
+          top = actualTop - menuH - gap;
         } else {
-          top = actualBottom + gap;       // 菜单顶部贴悬浮卡片底部
+          top = actualBottom + gap;
         }
-        
         if (top < 8) top = 8;
         if (top + menuH > screenH - 8) top = screenH - menuH - 8;
-
-        // 水平方向：吸附到悬浮卡片的左边缘
         let left = actualLeft;
         if (left + menuW > screenW - 8) left = screenW - menuW - 8;
         if (left < 8) left = 8;
-
         menu.style.top = top + 'px';
         menu.style.left = left + 'px';
-        
-                isMenuLocked = true; // 👈 菜单弹出时上锁
+        isMenuLocked = true;
         overlay.classList.add('show');
         menu.classList.add('show');
-        
-                // 克隆节点，彻底避开 iOS 幽灵点击
         const oldCopy = document.getElementById('ctx-copy');
         const oldFill = document.getElementById('ctx-fill');
         const oldCancel = document.getElementById('ctx-cancel');
-
-        // 空值保护：节点缺失或 parentNode 为空时回退到直接绑定，避免长按菜单失效
         let newCopy = oldCopy;
         let newFill = oldFill;
         let newCancel = oldCancel;
-
         if (oldCopy && oldFill && oldCancel && oldCopy.parentNode && oldFill.parentNode && oldCancel.parentNode) {
           newCopy = oldCopy.cloneNode(true);
           newFill = oldFill.cloneNode(true);
@@ -817,18 +754,14 @@ function bindSwipe(item){
           oldFill.parentNode.replaceChild(newFill, oldFill);
           oldCancel.parentNode.replaceChild(newCancel, oldCancel);
         }
-        
-        // 改用 touchstart，手指碰触瞬间即刻触发，无视系统吞噬
         newCopy.addEventListener('touchstart', (ev) => {
-          isMenuLocked = false; // 👈 解锁
+          isMenuLocked = false;
           ev.stopPropagation();
           ev.preventDefault();
           overlay.classList.remove('show');
           menu.classList.remove('show');
           item.parentElement.classList.remove('pressing');
-          
           setTimeout(() => {
-            // 👈 核心：直接从 DOM 上读取挂载的真实数据
             if (item._itemData) {
               copyRecordBelow(item._itemData);
             } else {
@@ -836,7 +769,6 @@ function bindSwipe(item){
             }
           }, 50);
         });
-        
         newFill.addEventListener('touchstart', (ev) => {
           ev.stopPropagation();
           ev.preventDefault();
@@ -847,13 +779,11 @@ function bindSwipe(item){
              toast('仅单式记录支持回填'); return;
           }
           setTimeout(() => {
-            // 👈 核心：直接从 DOM 上读取挂载的真实数据
             const activeItem = item._itemData;
             if (!activeItem) {
               toast('获取数据失败');
               return;
             }
-            
             state.sel = JSON.parse(JSON.stringify(activeItem.numbers));
             state.locked = {};
             state.hasTriggerRandom = false;
@@ -862,7 +792,6 @@ function bindSwipe(item){
             toast('✅ 已回填至选号区');
           }, 50);
         });
-
         newCancel.addEventListener('touchstart', (ev) => {
           ev.stopPropagation();
           ev.preventDefault();
@@ -876,13 +805,10 @@ function bindSwipe(item){
 
   item.addEventListener('touchmove',e=>{
     const cx=e.touches[0].clientX; const cy=e.touches[0].clientY; const dx=cx-sx; const dy=cy-sy;
-    
-                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       clearTimeout(pressTimer);
-      // 👈 只有还没触发长按时，才允许取消按压状态
       if(!item._isLongPressed) item.parentElement.classList.remove('pressing');
     }
-
     if(dir===null){ if(Math.abs(dx)>6||Math.abs(dy)>6){ dir=Math.abs(dx)>Math.abs(dy)?'h':'v'; } }
     if(dir==='v'){ return; }
     if(Math.abs(dx)>10) sw=true;
@@ -893,20 +819,17 @@ function bindSwipe(item){
     item.style.transform='translateX('+t+'px)';
   },{passive:true});
 
-    item.addEventListener('touchend',e=>{
+  item.addEventListener('touchend',e=>{
     clearTimeout(pressTimer);
-    // 👈 如果长按弹窗了，手指抬起时不要取消悬浮状态
     if (!item._isLongPressed) {
       item.parentElement.classList.remove('pressing');
     }
     item.style.transition='transform .3s cubic-bezier(.25,.8,.25,1)';
-    
-        if (item._isLongPressed) {
+    if (item._isLongPressed) {
       e.preventDefault();
       e.stopPropagation();
       return; 
     }
-
     if(dir==='v'){
       item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : '');
       dir=null; sw=false; return;
@@ -928,7 +851,7 @@ function bindSwipe(item){
     setTimeout(()=>{sw=false;},50);
   });
 
-    item.addEventListener('click',e=>{ 
+  item.addEventListener('click',e=>{ 
     if(sw || item._isLongPressed) {
       e.stopPropagation(); 
       e.preventDefault();
@@ -940,14 +863,12 @@ function bindSwipe(item){
     } 
   });
 }
-
 window.delRec=id=>{
   const isStar = state.view === 'star';
   if (isStar) { state.starList = state.starList.filter(i=>i.id!==id); }
   else { state.list = state.list.filter(i=>i.id!==id); }
   save(); renderList(); updateBadge(); updateAppendBtn();
 };
-
 function save(){ 
   try {
     localStorage.setItem('solo_lotto_v24',JSON.stringify(state.list)); 
@@ -957,7 +878,6 @@ function save(){
     toast('⚠️ 本地存储空间不足，记录可能无法保存');
   }
 }
-
 let hbTouchX = 0, hbTouchY = 0, isSwipingHb = false;
 hb.addEventListener('touchstart', e => {
   hbTouchX = e.touches[0].clientX;
@@ -967,13 +887,11 @@ hb.addEventListener('touchstart', e => {
 hb.addEventListener('touchmove', e => {
   const dx = e.touches[0].clientX - hbTouchX;
   const dy = e.touches[0].clientY - hbTouchY;
-  // 只有水平位移明显大于垂直位移，才算横向滑动
   if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) isSwipingHb = true;
 }, {passive: true});
 hb.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - hbTouchX;
   const dy = e.changedTouches[0].clientY - hbTouchY;
-  // 水平位移 >30 且大于垂直位移，才切视图
   if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
     isSwipingHb = true;
     state.view = state.view === 'list' ? 'star' : 'list';
@@ -984,23 +902,18 @@ hb.addEventListener('touchend', e => {
     isSwipingHb = false;
   }
 });
-
 hb.onclick = (e) => {
   if (isSwipingHb) { isSwipingHb = false; e.preventDefault(); e.stopPropagation(); return; }
-  // 若 hb 的 active 与 hp 的 show 不同步，先强制同步一次
   if (hp.classList.contains('show') && !hb.classList.contains('active')) {
     hb.classList.add('active');
   } else if (!hp.classList.contains('show') && hb.classList.contains('active')) {
     hb.classList.remove('active');
   }
-    if(hp.classList.contains('show')){
-    // 停掉展开动画，避免收起瞬间重排微抖
+  if(hp.classList.contains('show')){
     hp.style.animation = 'none';
     hb.classList.remove('active');
-    // 播收起动画，结束后再真正隐藏
     hp.classList.add('closing');
     const finishClose = () => {
-      // 只有仍在 closing 状态才执行，避免展开后被误关
       if (!hp.classList.contains('closing')) return;
       hp.classList.remove('closing');
       hp.classList.remove('show');
@@ -1014,20 +927,16 @@ hb.onclick = (e) => {
       }
     };
     hp.addEventListener('animationend', finishClose, { once: true });
-    // 兜底：动画被系统跳过时也要收起
     setTimeout(() => { if (hp.classList.contains('closing')) finishClose(); }, 260);
-    }else{
-    // 清掉可能残留的 closing 动画和监听，避免 finishClose 误触发
+  }else{
     hp.classList.remove('closing');
     hp.style.animation = '';
     hp.classList.add('show');hb.classList.add('active'); mp.classList.add('hidden');
     document.getElementById('bottom-btns').style.display='none'; renderList();updateAppendBtn();
   }
 };
-
 document.querySelectorAll('.tab').forEach(tab=>{
   tab.onclick=()=>{
-    // 点当前已选中的 tab，不切换彩种，也不关记录面板
     if (tab.dataset.type === state.type) {
       return;
     }
@@ -1040,11 +949,10 @@ document.querySelectorAll('.tab').forEach(tab=>{
     if (state.type !== 'qxc') { modeSelCache[state.type].single = { sel: {}, locked: {} }; modeSelCache[state.type].multi = { sel: {}, locked: {} }; }
     render(); renderList(); updateBadge();
     hp.classList.remove('show'); hp.classList.remove('closing'); hp.style.animation = '';
-hb.classList.remove('active'); mp.classList.remove('hidden');
-document.getElementById('bottom-btns').style.display='flex'; updateAppendBtn();
+    hb.classList.remove('active'); mp.classList.remove('hidden');
+    document.getElementById('bottom-btns').style.display='flex'; updateAppendBtn();
   };
 });
-
 document.querySelectorAll('.mb').forEach(btn=>{
   btn.onclick=()=>{
     if (state.type === 'qxc') { toast('七星彩暂无复式投注'); return; }
@@ -1052,7 +960,7 @@ document.querySelectorAll('.mb').forEach(btn=>{
     const cfg = LOT[state.type]; const oldMode = state.mode;
     modeSelCache[state.type][oldMode].sel = JSON.parse(JSON.stringify(state.sel));
     modeSelCache[state.type][oldMode].locked = JSON.parse(JSON.stringify(state.locked));
-        state.isLucky = false; // 👈 切模式时强制清空金球状态
+    state.isLucky = false;
     state.mode = newMode; const target = modeSelCache[state.type][newMode];
     if (!target.sel || Object.keys(target.sel).length === 0) {
       state.sel = {}; state.locked = {}; cfg.groups.forEach(g=>{ state.sel[g.id] = []; });
@@ -1066,41 +974,32 @@ document.querySelectorAll('.mb').forEach(btn=>{
     if (hp.classList.contains('show')) renderList();
   };
 });
-
 const btnRandom = $('rb');
 let rbTimer = null;
 let rbColorTimer = null;
 let rbIsLongPress = false;
-
 btnRandom.addEventListener('touchstart', (e) => {
   rbIsLongPress = false;
-  
-  // 复式模式：不触发长按视觉，直接退出（交给 touchend 处理正常机选）
   if (state.mode === 'multi') { 
     return; 
   }
-  
   btnRandom.classList.add('pressing');
-  
-    rbColorTimer = setTimeout(() => {
-    if(!rbIsLongPress) btnRandom.style.background = '#f5e6c8';
+  rbColorTimer = setTimeout(() => {
+        if(!rbIsLongPress) btnRandom.style.background = '#f5e6c8';
   }, 300);
 
   rbTimer = setTimeout(() => {
     rbIsLongPress = true;
-        clearTimeout(rbColorTimer);
+    clearTimeout(rbColorTimer);
     btnRandom.classList.remove('pressing');
     btnRandom.style.background = '';
     btnRandom.classList.add('flash');
     setTimeout(() => btnRandom.classList.remove('flash'), 300);
-    
     playFeedback();
-    
     state.isLucky = true;
     state.locked = {};
     state.hasTriggerRandom = false;
     state.qxcLocked=[false,false,false,false,false,false,false];
-    
     const cfg = LOT[state.type];
     if (state.type === 'qxc') {
       const ts = Date.now().toString();
@@ -1110,7 +1009,7 @@ btnRandom.addEventListener('touchstart', (e) => {
       state.sel[cfg.groups[0].id] = getFibonacciLuckyNumbers(cfg.groups[0].count, cfg.groups[0].max);
       state.sel[cfg.groups[1].id] = getFibonacciLuckyNumbers(cfg.groups[1].count, cfg.groups[1].max);
     }
-        render();
+    render();
   }, 500);
 }, {passive: true});
 
@@ -1126,13 +1025,12 @@ btnRandom.addEventListener('touchend', (e) => {
   clearTimeout(rbColorTimer);
   btnRandom.classList.remove('pressing');
   btnRandom.style.background = '';
-  
-  // 修复：如果不是长按（无论是复式还是单式短按），都执行普通机选
   if (!rbIsLongPress) {
     e.preventDefault();     
     randomFill(); 
   }
 }, {passive: false});
+
 const btnConfirm = $('cf');
 btnConfirm.addEventListener('touchstart', () => { btnConfirm.classList.add('pressing'); }, {passive: true});
 btnConfirm.addEventListener('touchend', () => { btnConfirm.classList.remove('pressing'); }, {passive: true});
@@ -1140,12 +1038,11 @@ btnConfirm.addEventListener('touchcancel', () => { btnConfirm.classList.remove('
 
 btnConfirm.onclick = () => {
   const beforeCount = state.list.length;
-  confirmSel(); // 执行原有逻辑
-  // 如果记录数量增加了，说明保存成功，触发闪光和震动
+  confirmSel();
   if (state.list.length > beforeCount) {
     playFeedback();
     btnConfirm.classList.remove('flash');
-    void btnConfirm.offsetWidth; // 强制重绘重置动画
+    void btnConfirm.offsetWidth;
     btnConfirm.classList.add('flash');
     setTimeout(() => btnConfirm.classList.remove('flash'), 400);
   }
@@ -1156,7 +1053,7 @@ $('cb').onclick=()=>{
   const isStar = state.view === 'star';
   const viewName = isStar ? '收藏' : '记录';
   if(confirm('确定要清空所有【'+LOT[state.type].name+'】的' + viewName + '吗？')){
-    playFeedback(); // 👈 新增：清空时触发震动反馈
+    playFeedback();
     if (isStar) {
       state.starList = state.starList.filter(i=>i.type!==state.type);
     } else {
@@ -1171,78 +1068,63 @@ ap.onclick=toggleAppend;
 const scrollContainer = document.querySelector('.app-scroll');
 let lastScrollTop = 0;
 const bottomBtns = document.getElementById('bottom-btns');
-
-let isThrottled = false; // 锁定状态标志
+let isThrottled = false;
 
 scrollContainer.addEventListener('scroll', () => {
   let st = scrollContainer.scrollTop;
-  
-    // 如果还在锁定期内，不更新 lastScrollTop，避免解锁后方向判断失真
   if (isThrottled) {
     return;
   }
-
-  // 向上滑动，距离超过 50px，立刻隐藏并锁定 300ms
   if (st > lastScrollTop && st > 50) {
     bottomBtns.classList.add('hide-bar');
-        isThrottled = true;
+    isThrottled = true;
     setTimeout(() => {
       isThrottled = false;
-      // 解锁时用当前滚动位置重新初始化，避免用节流期间的旧值比较
       lastScrollTop = scrollContainer.scrollTop;
     }, 300);  
   } 
-  // 向下滑动，立刻显示
   else if (st < lastScrollTop) {
     bottomBtns.classList.remove('hide-bar');
   }
-
-  // 兜底：如果滚到最顶部了，必定显示
   if (st === 0) {
     bottomBtns.classList.remove('hide-bar');
   }
-
   lastScrollTop = st <= 0 ? 0 : st;
 }, { passive: true });
 
 function copyRecordBelow(item) {
   const isStar = state.view === 'star';
   const targetList = isStar ? state.starList : state.list;
-  
   const newRec = JSON.parse(JSON.stringify(item));
   newRec.id = Date.now() + Math.floor(Math.random()*1000);
   if (isStar) newRec.createdAt = Date.now();
-  
   const index = targetList.findIndex(i => i.id === item.id);
   if (index === -1) {
     targetList.unshift(newRec);
   } else {
     targetList.splice(index + 1, 0, newRec);
   }
-  
   save();
   renderList();
   updateBadge();
   toast('✅ 已复制到下方');
 }
+
 document.getElementById('ctx-overlay').addEventListener('touchstart', function(e) {
-  // 强制拦截，防止穿透到底层卡片
   e.preventDefault();
   e.stopPropagation();
-  
-  isMenuLocked = false; // 👈 关闭菜单时解锁
-  // 只要点到这层遮罩，直接关闭菜单和遮罩，并恢复卡片状态
+  isMenuLocked = false;
   this.classList.remove('show');
   document.getElementById('ctx-menu').classList.remove('show');
   document.querySelectorAll('.sc.pressing').forEach(el => el.classList.remove('pressing'));
-  // 复位长按标记，避免下次点卡片被吞
   document.querySelectorAll('.hi').forEach(el => { el._isLongPressed = false; });
-}, { passive: false }); // 👈 注意这里的 passive: false，这是解决 iOS 吞事件的关键
-// 阻止记录面板长按弹出系统拷贝菜单
+}, { passive: false });
+
 hl.addEventListener('contextmenu', (e) => {
   e.preventDefault();
   e.stopPropagation();
-}, { passive: false });// 阻止上下文菜单本身的系统长按菜单
+}, { passive: false });
+
 document.getElementById('ctx-menu').addEventListener('contextmenu', (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -1253,14 +1135,11 @@ render();
 updateBadge();
 renderList();
 updateAppendBtn();
-// 👈 新增：页面切换到后台/锁屏时，清理所有未完成的定时器，防止回来时突然触发
+
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    // 清理机选长按的定时器
     if (typeof rbTimer !== 'undefined') clearTimeout(rbTimer);
     if (typeof rbColorTimer !== 'undefined') clearTimeout(rbColorTimer);
-    // 清理选号区的弹跳动画定时器（可选，防止回来时球乱弹）
-    // 如果有其他全局定时器也可以在这里清理
   }
 });
 </script>
