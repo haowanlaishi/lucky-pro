@@ -3,7 +3,9 @@
   "appName": "lucky",
   "webDir": "www",
   "ios": {
-    "contentInset": "always"
+    "contentInset": "never",
+    "backgroundColor": "#f4f6f9",
+    "limitsNavigationsToAppBoundDomains": true
   },
   "plugins": {
     "Haptics": {}
