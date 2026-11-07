@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,height=device-height,interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>千万梦想基金</title>
 <style>
@@ -60,7 +60,16 @@
   .ctx-menu-item:last-child { color: #98989d !important; } /* 取消：次级灰，拉开层次 */ 
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg-page); position: relative; font-family: -apple-system, sans-serif; color: var(--text-main); }
+html { height: 100%; height: 100dvh; }
+body { 
+  height: 100%; 
+  min-height: -webkit-fill-available; /* 👈 核心：强行撑满 iOS 底部安全区 */
+  overflow: hidden; 
+  background: var(--bg-page); 
+  position: relative; 
+  font-family: -apple-system, sans-serif; 
+  color: var(--text-main); 
+}
 .app-scroll { height: 100%; height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; padding: 0 15px calc(60px + env(safe-area-inset-bottom)) 15px; box-sizing: border-box; background: var(--bg-page); -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); will-change: transform; }
 .top-sticky-wrapper{ position:-webkit-sticky; position:sticky; top:0; z-index:1000; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; background:var(--glass-page); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding-top:calc(15px + env(safe-area-inset-top)); padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.8); flex-shrink:0; }
 .header{text-align:center;margin-bottom:10px;width:100%}
@@ -189,7 +198,9 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 /* 👇 在这里插入画廊的 CSS 👇 */
 /* ================= 全屏图片画廊 ================= */
 .gallery-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100%;
+  position: fixed; top: 0; left: 0; width: 100vw; 
+  height: 100vh;
+  height: 100dvh; /* 👈 强制覆盖底部安全区 */
   background: #000; z-index: 9999;
   display: none; opacity: 0; transition: opacity 0.2s;
   touch-action: none; /* 防止原生滚动干扰 */
