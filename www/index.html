@@ -236,20 +236,71 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 <!-- 全屏画廊层 -->
 <div class="gallery-overlay" id="gallery-overlay">
   <div class="gallery-track" id="gallery-track">
-    <!-- 首部副本 -->
-    <div class="gallery-slide"><img src="images/5.webp"></div>
-    
-    <!-- 1-5 原图 -->
+    <!-- 【首部副本】固定：等于最后一张真实图 images/50.webp -->
+    <div class="gallery-slide"><img src="images/50.webp"></div>
+
+    <!-- ========== 全部真实图片 1 ~ 50 ========== -->
     <div class="gallery-slide"><img src="images/1.webp"></div>
     <div class="gallery-slide"><img src="images/2.webp"></div>
     <div class="gallery-slide"><img src="images/3.webp"></div>
     <div class="gallery-slide"><img src="images/4.webp"></div>
     <div class="gallery-slide"><img src="images/5.webp"></div>
+    <div class="gallery-slide"><img src="images/6.webp"></div>
+    <div class="gallery-slide"><img src="images/7.webp"></div>
+    <div class="gallery-slide"><img src="images/8.webp"></div>
+    <div class="gallery-slide"><img src="images/9.webp"></div>
+    <div class="gallery-slide"><img src="images/10.webp"></div>
 
-    <!-- 尾部副本 -->
+    <div class="gallery-slide"><img src="images/11.webp"></div>
+    <div class="gallery-slide"><img src="images/12.webp"></div>
+    <div class="gallery-slide"><img src="images/13.webp"></div>
+    <div class="gallery-slide"><img src="images/14.webp"></div>
+    <div class="gallery-slide"><img src="images/15.webp"></div>
+    <div class="gallery-slide"><img src="images/16.webp"></div>
+    <div class="gallery-slide"><img src="images/17.webp"></div>
+    <div class="gallery-slide"><img src="images/18.webp"></div>
+    <div class="gallery-slide"><img src="images/19.webp"></div>
+    <div class="gallery-slide"><img src="images/20.webp"></div>
+
+    <div class="gallery-slide"><img src="images/21.webp"></div>
+    <div class="gallery-slide"><img src="images/22.webp"></div>
+    <div class="gallery-slide"><img src="images/23.webp"></div>
+    <div class="gallery-slide"><img src="images/24.webp"></div>
+    <div class="gallery-slide"><img src="images/25.webp"></div>
+    <div class="gallery-slide"><img src="images/26.webp"></div>
+    <div class="gallery-slide"><img src="images/27.webp"></div>
+    <div class="gallery-slide"><img src="images/28.webp"></div>
+    <div class="gallery-slide"><img src="images/29.webp"></div>
+    <div class="gallery-slide"><img src="images/30.webp"></div>
+
+    <div class="gallery-slide"><img src="images/31.webp"></div>
+    <div class="gallery-slide"><img src="images/32.webp"></div>
+    <div class="gallery-slide"><img src="images/33.webp"></div>
+    <div class="gallery-slide"><img src="images/34.webp"></div>
+    <div class="gallery-slide"><img src="images/35.webp"></div>
+    <div class="gallery-slide"><img src="images/36.webp"></div>
+    <div class="gallery-slide"><img src="images/37.webp"></div>
+    <div class="gallery-slide"><img src="images/38.webp"></div>
+    <div class="gallery-slide"><img src="images/39.webp"></div>
+    <div class="gallery-slide"><img src="images/40.webp"></div>
+
+    <div class="gallery-slide"><img src="images/41.webp"></div>
+    <div class="gallery-slide"><img src="images/42.webp"></div>
+    <div class="gallery-slide"><img src="images/43.webp"></div>
+    <div class="gallery-slide"><img src="images/44.webp"></div>
+    <div class="gallery-slide"><img src="images/45.webp"></div>
+    <div class="gallery-slide"><img src="images/46.webp"></div>
+    <div class="gallery-slide"><img src="images/47.webp"></div>
+    <div class="gallery-slide"><img src="images/48.webp"></div>
+    <div class="gallery-slide"><img src="images/49.webp"></div>
+    <div class="gallery-slide"><img src="images/50.webp"></div>
+    <!-- ======================================== -->
+
+    <!-- 【尾部副本】固定：等于第一张真实图 images/1.webp -->
     <div class="gallery-slide"><img src="images/1.webp"></div>
   </div>
 </div>
+
 <!-- 👆 插入结束 👆 -->
 <script>
 let isMenuLocked = false;
@@ -1214,6 +1265,19 @@ const titleEl = document.querySelector('.header h1');
 const overlay = document.getElementById('gallery-overlay');
 const track = document.getElementById('gallery-track');
 
+// 画廊图片版本：增/删图片时把数字+1，自动清除旧记忆索引【可选】
+const GALLERY_IMG_VERSION = 1;
+const localVer = parseInt(localStorage.getItem('galleryImgVer')||'0',10);
+let galleryLastIndex;
+if(localVer !== GALLERY_IMG_VERSION){
+  localStorage.setItem('galleryImgVer',String(GALLERY_IMG_VERSION));
+  localStorage.removeItem('galleryLastIndex');
+  galleryLastIndex = 0;
+}else{
+  galleryLastIndex = parseInt(localStorage.getItem('galleryLastIndex') ?? '0',10) || 0;
+}
+
+
 // 1. 标题横向滑动防误触
 let startX = 0, startY = 0;
 titleEl.addEventListener('touchstart', e => {
@@ -1224,37 +1288,40 @@ titleEl.addEventListener('touchstart', e => {
 titleEl.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - startX;
   const dy = e.changedTouches[0].clientY - startY;
-  
-  // 必须横向滑动 > 30px
-  if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+
+  const isHorizontalSwipe = Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy);
+
+  if(isHorizontalSwipe){
     const now = Date.now();
     if (now - titleSwipeTime < 1000) {
-      // 1000ms 内第二次滑动，触发全屏
+      // 第二次滑动：打开画廊，不震动
       titleSwipeTime = 0;
-      if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
       openGallery();
     } else {
-      // 第一次滑动，仅震动提示
+      // 第一次滑动：震动提示，记录时间戳
+      playFeedback();
       titleSwipeTime = now;
-      if (navigator.vibrate) navigator.vibrate(15); 
     }
   }
 });
 
+
 // 2. 打开画廊
 function openGallery() {
-  overlay.classList.add('show'); // 新增：标记画廊打开状态
+  overlay.classList.add('show');
   overlay.style.display = 'block';
-  void overlay.offsetWidth; // 触发重绘
+  void overlay.offsetWidth;
   overlay.style.opacity = '1';
-  
-  // 瞬间定位到第一张真正的图（跳过首部副本）
+
   track.style.scrollBehavior = 'auto';
-  track.scrollLeft = window.innerWidth;
+  // 使用本地存储记忆的下标定位：1个首部副本宽度 + 当前索引 * 屏幕宽度
+  track.scrollLeft = window.innerWidth * (1 + galleryLastIndex);
+
   setTimeout(() => {
     track.style.scrollBehavior = 'smooth';
   }, 50);
 }
+
 
 
 // 3. 无限循环无缝跳跃
@@ -1262,20 +1329,41 @@ track.addEventListener('scroll', () => {
   if (!overlay.classList.contains('show')) return;
   const width = window.innerWidth;
   const total = track.children.length;
-
-  // 滚到最左边，跳到倒数第二张（图5）
+  // 无缝循环：滚到最左边，跳到倒数第二张
   if (Math.round(track.scrollLeft) === 0) {
     track.style.scrollBehavior = 'auto';
     track.scrollLeft = width * (total - 2);
     setTimeout(() => track.style.scrollBehavior = 'smooth', 10);
   }
-  // 滚到最右边，跳到第二张（图1）
+  // 无缝循环：滚到最右边，跳到第二张
   else if (Math.round(track.scrollLeft + width) >= width * total) {
     track.style.scrollBehavior = 'auto';
     track.scrollLeft = width;
     setTimeout(() => track.style.scrollBehavior = 'smooth', 10);
   }
+
+  // 计算当前真实图片下标，持久化保存到localStorage
+  let scrollX = Math.round(track.scrollLeft);
+  let realOffset = scrollX - width;
+  let idx = Math.round(realOffset / width);
+  const realTotal = total - 2; // 减去头尾副本，得到真实图片数量
+
+  // 边界保护，索引越界强制归0
+  if(realTotal > 0){
+    if(idx < 0 || idx >= realTotal){
+      idx = 0;
+    }
+  }else{
+    idx = 0;
+  }
+
+  // 仅当索引变化，才写入localStorage，减少存储IO
+  if(galleryLastIndex !== idx){
+    galleryLastIndex = idx;
+    localStorage.setItem('galleryLastIndex', String(galleryLastIndex));
+  }
 }, { passive: true });
+
 
 // 4. 下拉退出逻辑
 let galleryStartY = 0, galleryStartX = 0, isDraggingDown = false, currentTranslateY = 0;
