@@ -162,7 +162,12 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 .btn.bs.flash { animation: btnFlashOrange 0.4s ease-out; }
 @keyframes btnFlashOrange { 0% { box-shadow: 0 0 0 0 rgba(231,111,81,0.8); } 100% { box-shadow: 0 0 0 25px rgba(231,111,81,0); } }
 @keyframes btnFlash { 0% { box-shadow: 0 0 0 0 rgba(249,199,79,0.7); } 100% { box-shadow: 0 0 0 20px rgba(249,199,79,0); } }
-.ball.lucky, .nb.lucky, .pb.lucky { background: #d4a037 !important; color: #fff !important; border: none !important; }
+/* 👈 仅保留预览区(.ball)和七星彩(.pb)为金色，选号区(.nb)保持原本的红/蓝/橙色 */
+.ball.lucky, .pb.lucky { 
+  background: #d4a037 !important; 
+  color: #fff !important; 
+  border: none !important; 
+}
 .ctx-menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.1); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; pointer-events: none; touch-action: none; }
 .ctx-menu-overlay.show { display: block; opacity: 1; pointer-events: auto; }
 .ctx-menu { position: fixed; background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 30px var(--shadow); display: none; flex-direction: column; overflow: hidden; width: 120px; z-index: 2001; pointer-events: auto; opacity: 0; transform: scale(0.96); transition: opacity 0.15s, transform 0.15s; }
