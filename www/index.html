@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,height=device-height,interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>千万梦想基金</title>
 <style>
@@ -60,16 +60,7 @@
   .ctx-menu-item:last-child { color: #98989d !important; } /* 取消：次级灰，拉开层次 */ 
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html { height: 100%; height: 100dvh; }
-body { 
-  height: 100%; 
-  min-height: -webkit-fill-available; /* 👈 核心：强行撑满 iOS 底部安全区 */
-  overflow: hidden; 
-  background: var(--bg-page); 
-  position: relative; 
-  font-family: -apple-system, sans-serif; 
-  color: var(--text-main); 
-}
+html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg-page); position: relative; font-family: -apple-system, sans-serif; color: var(--text-main); }
 .app-scroll { height: 100%; height: 100dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; align-items: center; padding: 0 15px calc(60px + env(safe-area-inset-bottom)) 15px; box-sizing: border-box; background: var(--bg-page); -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); will-change: transform; }
 .top-sticky-wrapper{ position:-webkit-sticky; position:sticky; top:0; z-index:1000; width:100%; max-width:400px; display:flex; flex-direction:column; align-items:center; background:var(--glass-page); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding-top:calc(15px + env(safe-area-inset-top)); padding-bottom:5px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.8); flex-shrink:0; }
 .header{text-align:center;margin-bottom:10px;width:100%}
@@ -198,9 +189,7 @@ body {
 /* 👇 在这里插入画廊的 CSS 👇 */
 /* ================= 全屏图片画廊 ================= */
 .gallery-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; 
-  height: 100vh;
-  height: 100dvh; /* 👈 强制覆盖底部安全区 */
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: #000; z-index: 9999;
   display: none; opacity: 0; transition: opacity 0.2s;
   touch-action: none; /* 防止原生滚动干扰 */
@@ -214,7 +203,7 @@ body {
 }
 .gallery-track::-webkit-scrollbar { display: none; }
 .gallery-slide {
-  flex: 0 0 100vw; height: 100%;
+  flex: 0 0 100vw; height: 100vh;
   scroll-snap-align: center;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1333,30 +1322,39 @@ function openGallery() {
 }
 
 // 3. 无限循环无缝跳跃
+let isJumping = false; // 👈 新增防抖锁
 galTrack.addEventListener('scroll', () => {
-  if (!galOverlay.classList.contains('show')) return;
+  if (!galOverlay.classList.contains('show') || isJumping) return;
+  
   const width = window.innerWidth;
   const total = galTrack.children.length;
-  // 无缝循环：滚到最左边，跳到倒数第二张
+
+  // 监听用户是否滑动到了边界
   if (Math.round(galTrack.scrollLeft) === 0) {
-    galTrack.style.scrollBehavior = 'auto';
+    isJumping = true;
+    galTrack.style.scrollBehavior = 'auto'; // 瞬间关闭平滑
     galTrack.scrollLeft = width * (total - 2);
-    setTimeout(() => galTrack.style.scrollBehavior = 'smooth', 10);
-  }
-  // 无缝循环：滚到最右边，跳到第二张
-  else if (Math.round(galTrack.scrollLeft + width) >= width * total) {
+    // 👈 用 rAF 代替 setTimeout，下一帧立刻恢复，彻底消除延迟感
+    requestAnimationFrame(() => {
+      galTrack.style.scrollBehavior = 'smooth';
+      isJumping = false;
+    });
+  } else if (Math.round(galTrack.scrollLeft + width) >= width * total) {
+    isJumping = true;
     galTrack.style.scrollBehavior = 'auto';
     galTrack.scrollLeft = width;
-    setTimeout(() => galTrack.style.scrollBehavior = 'smooth', 10);
+    requestAnimationFrame(() => {
+      galTrack.style.scrollBehavior = 'smooth';
+      isJumping = false;
+    });
   }
 
   // 计算当前真实图片下标，持久化保存到localStorage
   let scrollX = Math.round(galTrack.scrollLeft);
   let realOffset = scrollX - width;
   let idx = Math.round(realOffset / width);
-  const realTotal = total - 2; // 减去头尾副本，得到真实图片数量
+  const realTotal = total - 2;
 
-  // 边界保护，索引越界强制归0
   if(realTotal > 0){
     if(idx < 0 || idx >= realTotal){
       idx = 0;
@@ -1365,7 +1363,6 @@ galTrack.addEventListener('scroll', () => {
     idx = 0;
   }
 
-  // 仅当索引变化，才写入localStorage，减少存储IO
   if(galleryLastIndex !== idx){
     galleryLastIndex = idx;
     localStorage.setItem('galleryLastIndex', String(galleryLastIndex));
