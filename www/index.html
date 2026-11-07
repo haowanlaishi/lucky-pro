@@ -213,7 +213,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 }
 /* 👆 插入结束 👆 */
 
-</style>
 </style></head>
 <body>
 <div class="app-scroll">
@@ -1244,6 +1243,7 @@ titleEl.addEventListener('touchend', e => {
 
 // 2. 打开画廊
 function openGallery() {
+  overlay.classList.add('show'); // 新增：标记画廊打开状态
   overlay.style.display = 'block';
   void overlay.offsetWidth; // 触发重绘
   overlay.style.opacity = '1';
@@ -1255,6 +1255,7 @@ function openGallery() {
     track.style.scrollBehavior = 'smooth';
   }, 50);
 }
+
 
 // 3. 无限循环无缝跳跃
 track.addEventListener('scroll', () => {
@@ -1278,6 +1279,18 @@ track.addEventListener('scroll', () => {
 
 // 4. 下拉退出逻辑
 let galleryStartY = 0, galleryStartX = 0, isDraggingDown = false, currentTranslateY = 0;
+// 画廊拖拽状态重置（正常回弹 / 手势被打断都调用）
+function galleryDragReset() {
+  isDraggingDown = false;
+  currentTranslateY = 0;
+  track.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+  track.style.transform = 'translateY(0)';
+  overlay.style.opacity = '1';
+  setTimeout(() => {
+    track.style.transition = '';
+  }, 300);
+}
+
 
 track.addEventListener('touchstart', e => {
   galleryStartY = e.touches[0].clientY;
@@ -1318,19 +1331,25 @@ track.addEventListener('touchend', e => {
       track.style.transform = `translateY(100vh)`;
       overlay.style.opacity = '0';
       setTimeout(() => {
-        overlay.style.display = 'none';
-        track.style.transform = '';
-        track.style.transition = '';
-      }, 300);
+  overlay.style.display = 'none';
+  track.style.transform = '';
+  track.style.transition = '';
+  overlay.classList.remove('show'); // 新增：关闭清除状态标记
+}, 300);
+
     } else {
-      // 不够，回弹
-      track.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
-      track.style.transform = 'translateY(0)';
-      overlay.style.opacity = '1';
-      setTimeout(() => track.style.transition = '', 300);
-    }
+  // 不够，回弹
+  galleryDragReset();
+}
+
   }
 });
+
+// ✅新增：手势被系统打断时重置拖拽状态
+track.addEventListener('touchcancel', () => {
+  galleryDragReset();
+}, { passive: true });
+
 /* 👆 插入结束 👆 */
 </script>
 </body></html>
