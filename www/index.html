@@ -194,7 +194,7 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
   display: none; opacity: 0; transition: opacity 0.2s;
   touch-action: none; /* 防止原生滚动干扰 */
 }
-.gallery-overlay.show { display: block; opacity: 1; }
+.gallery-overlay.show { display: block; }
 .gallery-track {
   display: flex; width: 100%; height: 100%;
   overflow-x: auto; scroll-snap-type: x mandatory;
@@ -210,6 +210,15 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 .gallery-slide img {
   width: 100%; height: 100%; object-fit: cover;
   pointer-events: none; /* 防止图片被长按拖拽 */
+}
+
+/* 👇 打开时轻微缩放回弹（系统相册质感） */
+.gallery-overlay.show .gallery-track {
+  animation: galZoomIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@keyframes galZoomIn {
+  from { transform: scale(1.04); opacity: 0.6; }
+  to   { transform: scale(1);    opacity: 1; }
 }
 /* 👆 插入结束 👆 */
 
@@ -1307,13 +1316,28 @@ titleEl.addEventListener('touchend', e => {
 
 // 2. 打开画廊
 function openGallery() {
-  galOverlay.classList.add('show');
-  galOverlay.style.display = 'block';
-  void galOverlay.offsetWidth;
-  galOverlay.style.opacity = '1';
+  // 👇 1. 先清动画（此时还没 .show，无动画可停），避免"跑几帧又被重置"的抖动
+  galTrack.style.animation = 'none';
+  void galTrack.offsetWidth;
 
+  // 👇 2. 进入渲染树，起始 opacity = 0（.show 只负责 display，不再管 opacity）
+  galOverlay.style.display = 'block';
+  galOverlay.style.opacity = '0';
+  galOverlay.classList.add('show');
+
+  // 👇 3. 强制 reflow，让 opacity:0 成为"上一次计算值"
+  void galOverlay.offsetWidth;
+
+  // 👇 4. 下一帧把 opacity 推到 1，触发淡入
+  requestAnimationFrame(() => {
+    galOverlay.style.opacity = '1';
+  });
+
+  // 👇 5. 解除动画抑制，缩放回弹从 0% 干净开始
+  galTrack.style.animation = '';
+
+  // 👇 6. 定位到记忆的下标
   galTrack.style.scrollBehavior = 'auto';
-  // 使用本地存储记忆的下标定位：1个首部副本宽度 + 当前索引 * 屏幕宽度
   galTrack.scrollLeft = window.innerWidth * (1 + galleryLastIndex);
 
   setTimeout(() => {
@@ -1376,11 +1400,13 @@ let galleryStartY = 0, galleryStartX = 0, isDraggingDown = false, currentTransla
 function galleryDragReset() {
   isDraggingDown = false;
   currentTranslateY = 0;
+  galTrack.style.animation = 'none';            // 👈 停掉缩放动画
   galTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
   galTrack.style.transform = 'translateY(0)';
   galOverlay.style.opacity = '1';
   setTimeout(() => {
     galTrack.style.transition = '';
+    galTrack.style.animation = '';
   }, 300);
 }
 
@@ -1417,16 +1443,19 @@ galTrack.addEventListener('touchmove', e => {
 
 galTrack.addEventListener('touchend', e => {
   if (isDraggingDown) {
-    if (currentTranslateY > 150) {
+        if (currentTranslateY > 150) {
       // 超过 150px 触发关闭
+      galTrack.style.animation = 'none';        // 👈 关键：停掉缩放动画，避免和 transform 打架
       galTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
       galTrack.style.transform = `translateY(100vh)`;
       galOverlay.style.opacity = '0';
-      setTimeout(() => {
+            setTimeout(() => {
         galOverlay.style.display = 'none';
+        galOverlay.style.opacity = '';          // 👈 清行内 opacity，保证下次打开从 0 淡入
         galTrack.style.transform = '';
         galTrack.style.transition = '';
-        galOverlay.classList.remove('show'); // 关闭清除状态标记
+        galTrack.style.animation = '';
+        galOverlay.classList.remove('show');
       }, 300);
 
     } else {
