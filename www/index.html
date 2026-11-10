@@ -245,8 +245,8 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 <!-- 全屏画廊层 -->
 <div class="gallery-overlay" id="gallery-overlay">
   <div class="gallery-track" id="gallery-track">
-    <!-- 【首部副本】固定：等于最后一张真实图 images/50.webp -->
-    <div class="gallery-slide"><img src="images/50.webp"></div>
+    <!-- 【首部副本】固定：等于最后一张真实图 images/99.webp -->
+    <div class="gallery-slide"><img src="images/99.webp"></div>
 
     <!-- ========== 全部真实图片 1 ~ 50 ========== -->
     <div class="gallery-slide"><img src="images/1.webp"></div>
@@ -303,6 +303,60 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/48.webp"></div>
     <div class="gallery-slide"><img src="images/49.webp"></div>
     <div class="gallery-slide"><img src="images/50.webp"></div>
+
+    <div class="gallery-slide"><img src="images/51.webp"></div>
+    <div class="gallery-slide"><img src="images/52.webp"></div>
+    <div class="gallery-slide"><img src="images/53.webp"></div>
+    <div class="gallery-slide"><img src="images/54.webp"></div>
+    <div class="gallery-slide"><img src="images/55.webp"></div>
+    <div class="gallery-slide"><img src="images/56.webp"></div>
+    <div class="gallery-slide"><img src="images/57.webp"></div>
+    <div class="gallery-slide"><img src="images/58.webp"></div>
+    <div class="gallery-slide"><img src="images/59.webp"></div>
+    <div class="gallery-slide"><img src="images/60.webp"></div>
+
+    <div class="gallery-slide"><img src="images/61.webp"></div>
+    <div class="gallery-slide"><img src="images/62.webp"></div>
+    <div class="gallery-slide"><img src="images/63.webp"></div>
+    <div class="gallery-slide"><img src="images/64.webp"></div>
+    <div class="gallery-slide"><img src="images/65.webp"></div>
+    <div class="gallery-slide"><img src="images/66.webp"></div>
+    <div class="gallery-slide"><img src="images/67.webp"></div>
+    <div class="gallery-slide"><img src="images/68.webp"></div>
+    <div class="gallery-slide"><img src="images/69.webp"></div>
+    <div class="gallery-slide"><img src="images/70.webp"></div>
+
+    <div class="gallery-slide"><img src="images/71.webp"></div>
+    <div class="gallery-slide"><img src="images/72.webp"></div>
+    <div class="gallery-slide"><img src="images/73.webp"></div>
+    <div class="gallery-slide"><img src="images/74.webp"></div>
+    <div class="gallery-slide"><img src="images/75.webp"></div>
+    <div class="gallery-slide"><img src="images/76.webp"></div>
+    <div class="gallery-slide"><img src="images/77.webp"></div>
+    <div class="gallery-slide"><img src="images/78.webp"></div>
+    <div class="gallery-slide"><img src="images/79.webp"></div>
+    <div class="gallery-slide"><img src="images/80.webp"></div>
+
+    <div class="gallery-slide"><img src="images/81.webp"></div>
+    <div class="gallery-slide"><img src="images/82.webp"></div>
+    <div class="gallery-slide"><img src="images/83.webp"></div>
+    <div class="gallery-slide"><img src="images/84.webp"></div>
+    <div class="gallery-slide"><img src="images/85.webp"></div>
+    <div class="gallery-slide"><img src="images/86.webp"></div>
+    <div class="gallery-slide"><img src="images/87.webp"></div>
+    <div class="gallery-slide"><img src="images/88.webp"></div>
+    <div class="gallery-slide"><img src="images/89.webp"></div>
+    <div class="gallery-slide"><img src="images/90.webp"></div>
+
+    <div class="gallery-slide"><img src="images/91.webp"></div>
+    <div class="gallery-slide"><img src="images/92.webp"></div>
+    <div class="gallery-slide"><img src="images/93.webp"></div>
+    <div class="gallery-slide"><img src="images/94.webp"></div>
+    <div class="gallery-slide"><img src="images/95.webp"></div>
+    <div class="gallery-slide"><img src="images/96.webp"></div>
+    <div class="gallery-slide"><img src="images/97.webp"></div>
+    <div class="gallery-slide"><img src="images/98.webp"></div>
+    <div class="gallery-slide"><img src="images/99.webp"></div>
     <!-- ======================================== -->
 
     <!-- 【尾部副本】固定：等于第一张真实图 images/1.webp -->
@@ -1276,7 +1330,7 @@ const galOverlay = document.getElementById('gallery-overlay');
 const galTrack = document.getElementById('gallery-track');
 
 // 画廊图片版本：增/删图片时把数字+1，自动清除旧记忆索引【可选】
-const GALLERY_IMG_VERSION = 1;
+const GALLERY_IMG_VERSION = 2;
 const localVer = parseInt(localStorage.getItem('galleryImgVer')||'0',10);
 let galleryLastIndex;
 if(localVer !== GALLERY_IMG_VERSION){
@@ -1353,17 +1407,17 @@ galTrack.addEventListener('scroll', () => {
   const width = window.innerWidth;
   const total = galTrack.children.length;
 
-  // 监听用户是否滑动到了边界
-  if (Math.round(galTrack.scrollLeft) === 0) {
+    // 监听用户是否滑动到了边界
+  if (Math.round(galTrack.scrollLeft) <= 0) {
     isJumping = true;
     galTrack.style.scrollBehavior = 'auto'; // 瞬间关闭平滑
     galTrack.scrollLeft = width * (total - 2);
-    // 👈 用 rAF 代替 setTimeout，下一帧立刻恢复，彻底消除延迟感
     requestAnimationFrame(() => {
       galTrack.style.scrollBehavior = 'smooth';
       isJumping = false;
     });
-  } else if (Math.round(galTrack.scrollLeft + width) >= width * total) {
+    return; // 👈 关键：跳跃帧直接结束，不往下算索引
+  } else if (galTrack.scrollLeft + width >= width * total - 2) {
     isJumping = true;
     galTrack.style.scrollBehavior = 'auto';
     galTrack.scrollLeft = width;
@@ -1371,6 +1425,7 @@ galTrack.addEventListener('scroll', () => {
       galTrack.style.scrollBehavior = 'smooth';
       isJumping = false;
     });
+    return; // 👈 关键：跳跃帧直接结束，不往下算索引
   }
 
   // 计算当前真实图片下标，持久化保存到localStorage
