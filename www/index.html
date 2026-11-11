@@ -244,7 +244,11 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
   opacity: 0.3; 
   background: var(--bg-input);
 }
-</style>
+
+/* 👈 修复：排除拖拽和长按状态，让让位动画平滑，同时保留长按的果冻弹性 */
+.sc .hi:not(.dragging):not(.pressing) {
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
 </style></head>
 <body>
@@ -826,6 +830,7 @@ window.copyToOther = item => {
   targetList.push(newRec); save(); toast(isStar ? '已加入记录' : '已加入收藏'); updateBadge();
 };
 function renderList(){
+  hl.style.overflowY = ''; // 👈 每次渲染先重置滚动状态，绝对防止卡死
   const isStar = state.view === 'star'; const sourceList = isStar ? state.starList : state.list;
   const d = sourceList.filter(i=>i.type===state.type&&i.mode===state.mode);
   const prevScrollTop = hl.scrollTop;
@@ -896,8 +901,10 @@ function renderList(){
     div._itemData = JSON.parse(JSON.stringify(item)); 
     bindSwipe(div); sc.appendChild(sal); sc.appendChild(sar); sc.appendChild(div); frag.appendChild(sc);
   });
-  hl.appendChild(frag);
-  hl.scrollTop = prevScrollTop;
+    hl.appendChild(frag);
+  requestAnimationFrame(() => {
+    hl.scrollTop = prevScrollTop; // 👈 用 rAF 延迟一帧，保证滚动高度已重算，防止跳顶
+  });
 }
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
@@ -905,14 +912,13 @@ function bindSwipe(item){
   let dragTimer = null;
   item._isLongPressed = false;
 
-  // 拖拽移动逻辑
+  // 拖拽移动逻辑（含边缘自动滚动）
     const onDragMove = (e) => {
     if (!isDragging) return;
     if (e.cancelable) e.preventDefault(); 
+    e.stopPropagation(); // 👈 修复：彻底阻止事件冒泡
     
-    // 👈 修复 2：强制锁死列表滚动，防止拖拽时列表跟着跑
     hl.style.overflowY = 'hidden';
-
     const clientY = e.touches[0].clientY;
     dragCurrentY = clientY;
     
@@ -927,7 +933,6 @@ function bindSwipe(item){
     siblings.forEach((sc, idx) => {
       if (idx === currentIdx) return;
       const rect = sc.getBoundingClientRect();
-      // 如果手指进入了另一张卡片的中心区域
       if (clientY > rect.top && clientY < rect.bottom) {
         if (idx < currentIdx) {
           dragItem.parentElement.parentElement.insertBefore(dragItem.parentElement, sc);
@@ -936,29 +941,44 @@ function bindSwipe(item){
         }
       }
     });
+
+    // 👇 新增：边缘自动滚动逻辑
+    const listRect = hl.getBoundingClientRect();
+    const edgeSize = 60; // 距离边缘 60px 触发滚动
+    if (clientY < listRect.top + edgeSize) {
+      hl.scrollTop -= 8; // 向上滚
+    } else if (clientY > listRect.bottom - edgeSize) {
+      hl.scrollTop += 8; // 向下滚
+    }
   };
 
   // 拖拽结束逻辑
-    const onDragEnd = () => {
+  const onDragEnd = () => {
     if (!isDragging) return;
     isDragging = false;
     
-    // 清理 UI 状态
     dragItem.classList.remove('dragging');
     dragItem.style.transform = '';
     document.querySelectorAll('.hi.drag-ghost').forEach(el => el.classList.remove('drag-ghost'));
 
-    // 👈 修复 2 的收尾：恢复列表滚动
-    hl.style.overflowY = 'auto';
+        hl.style.overflowY = ''; // 👈 修复：用空字符串让 CSS 默认样式接管
 
-    // 提取最新顺序并保存
-    const scrollers = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
+        const scrollers = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
     
-    // 👈 修复 1：重新绑定最新的 _itemData 到 DOM 上
-    const newList = scrollers.map(sc => {
+    // 👈 修复：根据 DOM 最新的顺序，去原始数据池里精准匹配，防止数据错位
+    const sourceList = state.view === 'star' ? state.starList : state.list;
+    const newList = [];
+    
+    scrollers.forEach(sc => {
       const hi = sc.querySelector('.hi');
-      return hi._itemData;
-    }).filter(Boolean);
+      // 通过 DOM 上挂载的 id，去原始数据里找到对应的完整数据
+      const originalItem = sourceList.find(i => i.id === hi._itemData.id);
+      if (originalItem) {
+        newList.push(originalItem);
+        // 顺手把最新的引用挂回 DOM
+        hi._itemData = JSON.parse(JSON.stringify(originalItem));
+      }
+    });
     
     if (state.view === 'star') {
       state.starList = newList;
@@ -966,18 +986,42 @@ function bindSwipe(item){
       state.list = newList;
     }
     save();
-    renderList(); // 重渲染，清理虚影
-    toast('✅ 排序已保存');
+    
+    // 👈 修复 1：延迟渲染前校验当前视图是否依然是拖拽时的视图
+    const dragViewType = state.type;
+    const dragViewMode = state.mode;
+    const dragViewStar = state.view === 'star';
+
+    setTimeout(() => {
+      // 如果在这几毫秒内你切了彩种/单复式，就放弃这次渲染，防止串台
+      if (state.type !== dragViewType || state.mode !== dragViewMode || (state.view === 'star') !== dragViewStar) {
+         return; 
+      }
+      renderList(); 
+      toast('✅ 排序已保存');
+    }, 200);
     
     setTimeout(() => { isDragging = false; dragItem = null; }, 50);
     
-    // 移除全局监听
-    document.removeEventListener('touchmove', onDragMove);
+            document.removeEventListener('touchmove', onDragMove);
     document.removeEventListener('touchend', onDragEnd);
     document.removeEventListener('touchcancel', onDragEnd);
+    
+        // 👈 修复 2：用时间戳记录拖拽结束时间，防止松手瞬间误触和状态干扰
+    dragItem._dragEndTime = Date.now();
+    setTimeout(() => { 
+      if (dragItem) {
+        // 顺手恢复过渡
+        dragItem.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
+      }
+    }, 100);
   };
 
-  item.addEventListener('touchstart',e=>{
+    item.addEventListener('touchstart',e=>{
+    // 👈 修复 2：如果距离上次拖拽结束不到 100ms，直接拦截，防止误触
+    if (item._dragEndTime && Date.now() - item._dragEndTime < 100) {
+      return;
+    }
     if (isMenuLocked) {
       setTimeout(() => { isMenuLocked = false; }, 50);
       return; 
@@ -990,20 +1034,19 @@ function bindSwipe(item){
     
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
 
-    // 👇 1. 初始化拖拽检测（200ms 后有上下滑动，就进入拖拽）
+    // 1. 初始化拖拽检测
     dragTimer = setTimeout(() => {
       const onFirstMove = (ev) => {
         const dy = ev.touches[0].clientY - sy;
         const dx = ev.touches[0].clientX - sx;
         
-        // 如果向上/向下移动超过 10px，立刻进入拖拽模式
         if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
           document.removeEventListener('touchmove', onFirstMove);
-          clearTimeout(pressTimer); // 取消长按菜单
+          clearTimeout(pressTimer);
           isDragging = true;
           dragItem = item;
           dragStartY = ev.touches[0].clientY;
-          item._isLongPressed = true; // 阻止滑动和点击
+          item._isLongPressed = true;
           
           playFeedback();
           item.classList.add('dragging');
@@ -1015,7 +1058,6 @@ function bindSwipe(item){
           document.addEventListener('touchcancel', onDragEnd);
           ev.preventDefault();
         } 
-        // 如果是左右滑动，取消拖拽检测，交给原本的 swipe 逻辑
         else if (Math.abs(dx) > 10) {
           document.removeEventListener('touchmove', onFirstMove);
         }
@@ -1023,10 +1065,10 @@ function bindSwipe(item){
       document.addEventListener('touchmove', onFirstMove, { passive: false });
     }, 200); 
 
-    // 👇 2. 初始化长按菜单（500ms 不动，弹出原菜单）
+    // 2. 初始化长按菜单
     if (allowLongPress) {
       pressTimer = setTimeout(() => {
-        if (isDragging) return; // 如果已经在拖拽了，就不弹菜单
+        if (isDragging) return; 
         item._isLongPressed = true;
         if (e.cancelable) e.preventDefault();
         playFeedback();
@@ -1046,44 +1088,52 @@ function bindSwipe(item){
         let left = actualLeft; if (left + menuW > screenW - 8) left = screenW - menuW - 8; if (left < 8) left = 8;
         menu.style.top = top + 'px'; menu.style.left = left + 'px';
         isMenuLocked = true;
-        overlay.classList.add('show'); menu.classList.add('show');
+        // 👈 修复 1：去掉了重复的 classList.add，避免视觉闪烁和状态异常
+        overlay.classList.add('show'); 
+        menu.classList.add('show');
         
-        // 菜单项克隆绑定
-        const oldCopy = document.getElementById('ctx-copy');
-        const oldFill = document.getElementById('ctx-fill');
-        const oldCancel = document.getElementById('ctx-cancel');
-        let newCopy = oldCopy; let newFill = oldFill; let newCancel = oldCancel;
-        if (oldCopy && oldFill && oldCancel && oldCopy.parentNode && oldFill.parentNode && oldCancel.parentNode) {
-          newCopy = oldCopy.cloneNode(true); newFill = oldFill.cloneNode(true); newCancel = oldCancel.cloneNode(true);
-          oldCopy.parentNode.replaceChild(newCopy, oldCopy); oldFill.parentNode.replaceChild(newFill, oldFill); oldCancel.parentNode.replaceChild(newCancel, oldCancel);
-        }
-        newCopy.addEventListener('touchstart', (ev) => {
-          isMenuLocked = false; ev.stopPropagation(); ev.preventDefault();
-          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
-          setTimeout(() => { if (item._itemData) copyRecordBelow(item._itemData); else toast('获取数据失败'); }, 50);
-        });
-        newFill.addEventListener('touchstart', (ev) => {
+                const handleMenuClick = (ev) => {
           ev.stopPropagation(); ev.preventDefault();
-          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
-          if (state.mode === 'multi' || state.view === 'star') { toast('仅单式记录支持回填'); return; }
+          const target = ev.target.closest('.ctx-menu-item');
+          if (!target) return;
+          
+          // 👈 立即销毁监听器
+          document.removeEventListener('touchstart', handleMenuClick);
+          
+                    const itemId = target.id;
+          overlay.classList.remove('show'); 
+          menu.classList.remove('show'); 
+          item.parentElement.classList.remove('pressing');
+          item._isLongPressed = false;
+          item.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
+
+          // 👈 修复：把取消判断移到状态清理之后，保证卡片恢复正常
+          if (itemId === 'ctx-cancel') return;
+
           setTimeout(() => {
-            const activeItem = item._itemData;
-            if (!activeItem) { toast('获取数据失败'); return; }
-            state.sel = JSON.parse(JSON.stringify(activeItem.numbers));
-            state.locked = {}; state.hasTriggerRandom = false; state.isLucky = activeItem.isLucky || false;
-            render(); toast('✅ 已回填至选号区');
+            if (itemId === 'ctx-copy') {
+              if (item._itemData) copyRecordBelow(item._itemData);
+              else toast('获取数据失败');
+            } else if (itemId === 'ctx-fill') {
+              if (state.mode === 'multi' || state.view === 'star') { toast('仅单式记录支持回填'); return; }
+              const activeItem = item._itemData;
+              if (!activeItem) { toast('获取数据失败'); return; }
+              state.sel = JSON.parse(JSON.stringify(activeItem.numbers));
+              state.locked = {}; state.hasTriggerRandom = false; state.isLucky = activeItem.isLucky || false;
+              render(); toast('✅ 已回填至选号区');
+            }
           }, 50);
-        });
-        newCancel.addEventListener('touchstart', (ev) => {
-          ev.stopPropagation(); ev.preventDefault();
-          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
-        });        
+        };
+        
+        setTimeout(() => {
+          document.addEventListener('touchstart', handleMenuClick, { passive: false });
+        }, 50);                                 
       }, 500);
     }
   },{passive:true});
 
   item.addEventListener('touchmove',e=>{
-    if (isDragging) return; // 拖拽时拦截原有的左右滑动
+    if (isDragging) return; 
     const cx=e.touches[0].clientX; const cy=e.touches[0].clientY; const dx=cx-sx; const dy=cy-sy;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       clearTimeout(pressTimer);
@@ -1102,10 +1152,9 @@ function bindSwipe(item){
     item.addEventListener('touchend',e=>{
     clearTimeout(pressTimer);
     clearTimeout(dragTimer);
-    if (isDragging) return; // 拖拽结束由全局事件接管
+    if (isDragging) return; 
     
-    // 👈 修复补充：如果没触发拖拽，也要确保滚动是解锁的
-    hl.style.overflowY = 'auto';
+    hl.style.overflowY = ''; // 👈 修复：用空字符串恢复
 
     if (!item._isLongPressed) {
       item.parentElement.classList.remove('pressing');
@@ -1408,10 +1457,45 @@ updateBadge();
 renderList();
 updateAppendBtn();
 
+// 👇 修复 1：全局兜底，防止各种极端情况（如接电话、切后台）导致拖拽状态卡死
+document.addEventListener('touchcancel', () => {
+  if (isDragging) {
+    isDragging = false;
+    if (dragItem) {
+      dragItem.classList.remove('dragging');
+      dragItem.classList.remove('drag-ghost');
+      dragItem.style.transform = '';
+    }
+        hl.style.overflowY = ''; // 👈 修复：用空字符串恢复
+    renderList();
+  }
+});
+
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     if (typeof rbTimer !== 'undefined') clearTimeout(rbTimer);
     if (typeof rbColorTimer !== 'undefined') clearTimeout(rbColorTimer);
+    
+    if (isDragging) {
+      const scrollers = Array.from(hl.querySelectorAll('.sc'));
+      const newList = scrollers.map(sc => {
+        const hi = sc.querySelector('.hi');
+        return hi ? hi._itemData : null;
+      }).filter(Boolean);
+      
+      if (state.view === 'star') state.starList = newList;
+      else state.list = newList;
+      save();
+
+      isDragging = false;
+      if (dragItem) {
+        dragItem.classList.remove('dragging');
+        dragItem.classList.remove('drag-ghost');
+        dragItem.style.transform = '';
+      }
+      hl.style.overflowY = '';
+      renderList();
+    }
   }
 });
 /* 👇 在这里插入画廊的 JS 逻辑 👇 */
@@ -1463,6 +1547,12 @@ titleEl.addEventListener('touchend', e => {
 
 // 2. 打开画廊
 function openGallery() {
+  // 👈 修复 3：每次打开强制重置画廊拖拽状态，防止意外中断导致的卡死
+  isDraggingDown = false;
+  currentTranslateY = 0;
+  galTrack.style.transform = '';
+  galTrack.style.transition = '';
+
   // 👇 1. 先清动画（此时还没 .show，无动画可停），避免"跑几帧又被重置"的抖动
   galTrack.style.animation = 'none';
   void galTrack.offsetWidth;
