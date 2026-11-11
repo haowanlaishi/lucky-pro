@@ -6,14 +6,13 @@
 <style>
 :root{
   --p:#e63946;--s:#1d3557;--red:linear-gradient(135deg,#ff4b4b,#d90429);--blue:linear-gradient(135deg,#4cc9f0,#0077b6);--orange:linear-gradient(135deg,#f9c74f,#f8961e);--qf:linear-gradient(135deg,#5c5c99,#2d2d6b);--qb:linear-gradient(135deg,#f2c46d,#d4a037);--g:#e0e0e0;--gold:#d4a037;
-  /* 语义变量（浅色） */
   --bg-page:#f4f6f9;--bg-card:#fff;--bg-input:#f8f9fa;
   --text-main:#333;--text-sub:#888;--text-light:#aaa;
-  --border:#e0e0e0;--shadow:rgba(0,0,0,0.06); /* 稍微加深一点点阴影 */
-  --glass-page:rgba(255,255,255,0.72); /* 吸顶区：从灰底改成微白底，降低透明度让颜色透出来 */
-  --glass-bg:rgba(255,255,255,0.75); 
-  --glass-btn:rgba(255,255,255,0.65); /* 按钮稍微透一点，显现出下面的底色 */
-  --glass-btn-strong:rgba(255,255,255,0.55); 
+  --border:#e0e0e0;--shadow:rgba(0,0,0,0.06);
+  --glass-page:rgba(255,255,255,0.72);
+  --glass-bg:rgba(255,255,255,0.75);
+  --glass-btn:rgba(255,255,255,0.65);
+  --glass-btn-strong:rgba(255,255,255,0.55);
 }
 @media (prefers-color-scheme: dark){
   :root{
@@ -22,51 +21,24 @@
     --border:#38383a;--shadow:rgba(0,0,0,0.4);
     --glass-page:rgba(28,28,30,0.78);--glass-bg:rgba(44,44,46,0.8);--glass-btn:rgba(44,44,46,0.72);--glass-btn-strong:rgba(44,44,46,0.6);
   }
-  
-  /* 1. 选号球和选中区 */
   .nb { background: var(--bg-input) !important; border-color: #48484a !important; color: var(--text-sub); }
   .nb.qf { color: #c0c0ff !important; border-color: #5c5c99 !important; }
-  /* 👈 修复深色下选中后不发色的问题 */
   .nb.sel.red { background: var(--red) !important; color: #fff !important; border: none !important; }
   .nb.sel.blue { background: var(--blue) !important; color: #fff !important; border: none !important; }
   .nb.sel.orange { background: var(--orange) !important; color: #fff !important; border: none !important; }
-  
   .ps.as { background: rgba(255,255,255,0.06) !important; border-color: rgba(255,255,255,0.15) !important; }
-  
-  /* 2. 边框弱化 */
   .top-sticky-wrapper{border-bottom-color:transparent !important;}
   .hp{border-color:rgba(255,255,255,0.08);}
   .tabs{border-color:rgba(255,255,255,0.1);}
   .btn.br{border-color:rgba(255,255,255,0.1);}
   .header h1 { color: var(--text-sub); }
-
-  /* 3. 彻底干掉深蓝：Tab 和记录选中态改为深灰底 + 纯白字 */
-  .tab.active { 
-    background: #38383a !important; 
-    color: #ffffff !important; 
-    border-color: transparent !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
-  }
-  .hb.active { 
-    background: #38383a !important; 
-    color: #ffffff !important; 
-    border-color: rgba(255,255,255,0.1) !important; 
-  }
-
-    /* 4. 长按菜单的“复制” */
-  .ctx-menu-item.copy { color: #f2f2f7 !important; }  
-  .ctx-menu-item.fill { color: #ff6b6b !important; }  
-  .ctx-menu-item:last-child { color: #98989d !important; } 
-
-  /* 👇 修复 3：深色模式下的拖拽样式 */
-  .hi.dragging {
-    background: #2c2c2e !important;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
-  }
-  .hi.drag-ghost {
-    background: rgba(255,255,255,0.05) !important;
-    opacity: 0.5;
-  }
+  .tab.active { background: #38383a !important; color: #ffffff !important; border-color: transparent !important; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+  .hb.active { background: #38383a !important; color: #ffffff !important; border-color: rgba(255,255,255,0.1) !important; }
+  .ctx-menu-item.copy { color: #f2f2f7 !important; }
+  .ctx-menu-item.fill { color: #ff6b6b !important; }
+  .ctx-menu-item:last-child { color: #98989d !important; }
+  .hi.dragging { background: #2c2c2e !important; box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important; }
+  .hi.drag-ghost { background: rgba(255,255,255,0.05) !important; opacity: 0.5; }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg-page); position: relative; font-family: -apple-system, sans-serif; color: var(--text-main); }
@@ -171,12 +143,7 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 .btn.bs.flash { animation: btnFlashOrange 0.4s ease-out; }
 @keyframes btnFlashOrange { 0% { box-shadow: 0 0 0 0 rgba(231,111,81,0.8); } 100% { box-shadow: 0 0 0 25px rgba(231,111,81,0); } }
 @keyframes btnFlash { 0% { box-shadow: 0 0 0 0 rgba(249,199,79,0.7); } 100% { box-shadow: 0 0 0 20px rgba(249,199,79,0); } }
-/* 👈 仅保留预览区(.ball)和七星彩(.pb)为金色，选号区(.nb)保持原本的红/蓝/橙色 */
-.ball.lucky, .pb.lucky { 
-  background: #d4a037 !important; 
-  color: #fff !important; 
-  border: none !important; 
-}
+.ball.lucky, .pb.lucky { background: #d4a037 !important; color: #fff !important; border: none !important; }
 .ctx-menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.1); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; pointer-events: none; touch-action: none; }
 .ctx-menu-overlay.show { display: block; opacity: 1; pointer-events: auto; }
 .ctx-menu { position: fixed; background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 30px var(--shadow); display: none; flex-direction: column; overflow: hidden; width: 120px; z-index: 2001; pointer-events: auto; opacity: 0; transform: scale(0.96); transition: opacity 0.15s, transform 0.15s; }
@@ -189,67 +156,22 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 .sc.pressing { transform: scale(0.95) translateY(-4px) !important; box-shadow: 0 12px 30px var(--shadow) !important; z-index: 10; transition: transform 0.3s cubic-bezier(0.25,0.8,0.25,1), box-shadow 0.3s ease !important; overflow: hidden; }
 .hi, .nb, .hi *, .sc, .sc *, .hl, .hl *, .rw, .rw *, .ball, .ball *, .vl, .mg, .mg * { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
 .btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb { -webkit-touch-callout: none !important; -webkit-user-select: none !important; user-select: none !important; }
-.btn, .mb, .hb, .tab, .nb, .pb, .ball, .hb {
-  -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important; 
-  user-select: none !important;
-}
 
-/* 👇 在这里插入画廊的 CSS 👇 */
-/* ================= 全屏图片画廊 ================= */
-.gallery-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: #000; z-index: 9999;
-  display: none; opacity: 0; transition: opacity 0.2s;
-  touch-action: none; /* 防止原生滚动干扰 */
-}
+/* 👇 画廊 CSS 👇 */
+.gallery-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; opacity: 0; transition: opacity 0.2s; touch-action: none; }
 .gallery-overlay.show { display: block; }
-.gallery-track {
-  display: flex; width: 100%; height: 100%;
-  overflow-x: auto; scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* 隐藏滚动条 */
-}
+.gallery-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .gallery-track::-webkit-scrollbar { display: none; }
-.gallery-slide {
-  flex: 0 0 100vw; height: 100vh;
-  scroll-snap-align: center;
-  display: flex; align-items: center; justify-content: center;
-}
-.gallery-slide img {
-  width: 100%; height: 100%; object-fit: cover;
-  pointer-events: none; /* 防止图片被长按拖拽 */
-}
+.gallery-slide { flex: 0 0 100vw; height: 100vh; scroll-snap-align: center; display: flex; align-items: center; justify-content: center; }
+.gallery-slide img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.gallery-overlay.show .gallery-track { animation: galZoomIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
+@keyframes galZoomIn { from { transform: scale(1.04); opacity: 0.6; } to { transform: scale(1); opacity: 1; } }
 
-/* 👇 打开时轻微缩放回弹（系统相册质感） */
-.gallery-overlay.show .gallery-track {
-  animation: galZoomIn 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-@keyframes galZoomIn {
-  from { transform: scale(1.04); opacity: 0.6; }
-  to   { transform: scale(1);    opacity: 1; }
-}
-/* 👆 插入结束 👆 */
-
-/* 👇 新增：长按拖拽排序专用样式 */
-.hi.dragging {
-  transition: none !important; 
-  z-index: 999 !important;
-  background: var(--bg-card);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
-  transform: scale(1.02) !important; 
-  opacity: 0.95;
-}
-.hi.drag-ghost {
-  opacity: 0.3; 
-  background: var(--bg-input);
-}
-
-/* 👈 修复：排除拖拽和长按状态，让让位动画平滑，同时保留长按的果冻弹性 */
-.sc .hi:not(.dragging):not(.pressing) {
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
+/* 👇 拖拽排序 CSS 👇 */
+.hi.dragging { transition: none !important; z-index: 999 !important; background: var(--bg-card); box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; transform: scale(1.02) !important; opacity: 0.95; }
+.hi.drag-ghost { opacity: 0.3; background: var(--bg-input); }
+.sc .hi:not(.dragging):not(.pressing) { transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); }
+.sc.dragging-wrapper .sa { opacity: 0; pointer-events: none; transition: opacity 0.1s; }
 </style></head>
 <body>
 <div class="app-scroll">
@@ -269,14 +191,10 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
   <div class="ctx-menu-item fill" id="ctx-fill">回填</div>
   <div class="ctx-menu-item cancel" id="ctx-cancel">取消</div>
 </div>
-<!-- 👇 在这里插入画廊的 HTML 👇 -->
-<!-- 全屏画廊层 -->
+
 <div class="gallery-overlay" id="gallery-overlay">
   <div class="gallery-track" id="gallery-track">
-    <!-- 【首部副本】固定：等于最后一张真实图 images/99.webp -->
     <div class="gallery-slide"><img src="images/99.webp"></div>
-
-    <!-- ========== 全部真实图片 1 ~ 50 ========== -->
     <div class="gallery-slide"><img src="images/1.webp"></div>
     <div class="gallery-slide"><img src="images/2.webp"></div>
     <div class="gallery-slide"><img src="images/3.webp"></div>
@@ -287,7 +205,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/8.webp"></div>
     <div class="gallery-slide"><img src="images/9.webp"></div>
     <div class="gallery-slide"><img src="images/10.webp"></div>
-
     <div class="gallery-slide"><img src="images/11.webp"></div>
     <div class="gallery-slide"><img src="images/12.webp"></div>
     <div class="gallery-slide"><img src="images/13.webp"></div>
@@ -298,7 +215,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/18.webp"></div>
     <div class="gallery-slide"><img src="images/19.webp"></div>
     <div class="gallery-slide"><img src="images/20.webp"></div>
-
     <div class="gallery-slide"><img src="images/21.webp"></div>
     <div class="gallery-slide"><img src="images/22.webp"></div>
     <div class="gallery-slide"><img src="images/23.webp"></div>
@@ -309,7 +225,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/28.webp"></div>
     <div class="gallery-slide"><img src="images/29.webp"></div>
     <div class="gallery-slide"><img src="images/30.webp"></div>
-
     <div class="gallery-slide"><img src="images/31.webp"></div>
     <div class="gallery-slide"><img src="images/32.webp"></div>
     <div class="gallery-slide"><img src="images/33.webp"></div>
@@ -320,7 +235,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/38.webp"></div>
     <div class="gallery-slide"><img src="images/39.webp"></div>
     <div class="gallery-slide"><img src="images/40.webp"></div>
-
     <div class="gallery-slide"><img src="images/41.webp"></div>
     <div class="gallery-slide"><img src="images/42.webp"></div>
     <div class="gallery-slide"><img src="images/43.webp"></div>
@@ -331,7 +245,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/48.webp"></div>
     <div class="gallery-slide"><img src="images/49.webp"></div>
     <div class="gallery-slide"><img src="images/50.webp"></div>
-
     <div class="gallery-slide"><img src="images/51.webp"></div>
     <div class="gallery-slide"><img src="images/52.webp"></div>
     <div class="gallery-slide"><img src="images/53.webp"></div>
@@ -342,7 +255,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/58.webp"></div>
     <div class="gallery-slide"><img src="images/59.webp"></div>
     <div class="gallery-slide"><img src="images/60.webp"></div>
-
     <div class="gallery-slide"><img src="images/61.webp"></div>
     <div class="gallery-slide"><img src="images/62.webp"></div>
     <div class="gallery-slide"><img src="images/63.webp"></div>
@@ -352,8 +264,7 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/67.webp"></div>
     <div class="gallery-slide"><img src="images/68.webp"></div>
     <div class="gallery-slide"><img src="images/69.webp"></div>
-    <div class="gallery-slide"><img src="images/70.webp"></div>
-
+        <div class="gallery-slide"><img src="images/70.webp"></div>
     <div class="gallery-slide"><img src="images/71.webp"></div>
     <div class="gallery-slide"><img src="images/72.webp"></div>
     <div class="gallery-slide"><img src="images/73.webp"></div>
@@ -364,7 +275,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/78.webp"></div>
     <div class="gallery-slide"><img src="images/79.webp"></div>
     <div class="gallery-slide"><img src="images/80.webp"></div>
-
     <div class="gallery-slide"><img src="images/81.webp"></div>
     <div class="gallery-slide"><img src="images/82.webp"></div>
     <div class="gallery-slide"><img src="images/83.webp"></div>
@@ -375,7 +285,6 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/88.webp"></div>
     <div class="gallery-slide"><img src="images/89.webp"></div>
     <div class="gallery-slide"><img src="images/90.webp"></div>
-
     <div class="gallery-slide"><img src="images/91.webp"></div>
     <div class="gallery-slide"><img src="images/92.webp"></div>
     <div class="gallery-slide"><img src="images/93.webp"></div>
@@ -385,21 +294,12 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
     <div class="gallery-slide"><img src="images/97.webp"></div>
     <div class="gallery-slide"><img src="images/98.webp"></div>
     <div class="gallery-slide"><img src="images/99.webp"></div>
-    <!-- ======================================== -->
-
-    <!-- 【尾部副本】固定：等于第一张真实图 images/1.webp -->
     <div class="gallery-slide"><img src="images/1.webp"></div>
   </div>
 </div>
 
-<!-- 👆 插入结束 👆 -->
 <script>
 let isMenuLocked = false;
-// 👇 新增：拖拽排序全局变量
-let isDragging = false;
-let dragItem = null;
-let dragStartY = 0;
-let dragCurrentY = 0;
 
 function playFeedback() {
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
@@ -566,7 +466,7 @@ function renderNormalSelectGrid(cfg){
     gd.innerHTML='<div class="pt">'+g.name+' (至少 '+g.count+' 个)</div>';
     const grid=document.createElement('div'); grid.className='ng';
     for(let i=g.min;i<=g.max;i++){
-            const b=document.createElement('div'); b.className='nb '+g.colorClass; b.innerText=pad2(i);
+      const b=document.createElement('div'); b.className='nb '+g.colorClass; b.innerText=pad2(i);
       if(state.sel[g.id].includes(i)) {
         b.classList.add('sel');
         if (state.isLucky) b.classList.add('lucky');
@@ -651,8 +551,8 @@ function handleSelect(g,num){
   },10);
 }
 function randomFill(){
-state.isLucky = false;
-const cfg=LOT[state.type];
+  state.isLucky = false;
+  const cfg=LOT[state.type];
   if(state.mode==='multi'){
     state.locked={}; state.hasTriggerRandom=false; state.qxcLocked=[false,false,false,false,false,false,false];
     if(state.type==='qxc'){
@@ -683,7 +583,7 @@ const cfg=LOT[state.type];
   const g1 = cfg.groups[0]; const g2 = cfg.groups[1];
   if(!state.locked[g1.id]) state.locked[g1.id]=[];
   if(!state.locked[g2.id]) state.locked[g2.id]=[];
-    if(!state.hasTriggerRandom){
+  if(!state.hasTriggerRandom){
     state.locked[g1.id] = [...state.sel[g1.id]];
     state.locked[g2.id] = [...state.sel[g2.id]];
     state.hasTriggerRandom=true;
@@ -759,19 +659,15 @@ function toggleAppend(){
   save(); updateAppendBtn(); renderList(); toast(t?'已全部追加':'已取消追加');
 }
 function buildCopyText(){
-  const isStar = state.view === 'star'; 
+  const isStar = state.view === 'star';
   const sourceList = isStar ? state.starList : state.list;
   const d = sourceList.filter(i=>i.type===state.type&&i.mode===state.mode);
   if(d.length===0) return null;
-
-  const cfg = LOT[state.type]; 
+  const cfg = LOT[state.type];
   const head = '你好，' + cfg.name + (state.mode==='multi'?'复式':'');
-
-  // 👈 单式多条同号合并（所有彩种通用）
   if (!isStar && state.mode === 'single' && d.length > 1) {
     const firstNumsStr = JSON.stringify(d[0].numbers);
     const allSame = d.every(item => JSON.stringify(item.numbers) === firstNumsStr);
-
     if (allSame) {
       let oneLine = '';
       if (state.type === 'qxc') {
@@ -784,13 +680,10 @@ function buildCopyText(){
         const back = [...d[0].numbers[bg.id]].sort((a,b)=>a-b).map(pad2).join('  ');
         oneLine = front + '  +  ' + back;
       }
-      // 👈 合并行：倍数 + 追加（仅大乐透追加时带 ·追加）
       const appendTag = (d[0].type === 'dlt' && d[0].isAppend) ? '·追加' : '';
       return head + '\n' + oneLine + ' [' + d.length + '倍' + appendTag + ']';
     }
   }
-
-  // 👈 普通多行：每条一行，大乐透追加带 [追加]
   const lines = d.map(item => {
     let oneLine = '';
     if(item.type==='qxc'){
@@ -806,7 +699,6 @@ function buildCopyText(){
     const appendTag = (item.type === 'dlt' && item.isAppend) ? ' [追加]' : '';
     return oneLine + appendTag;
   });
-  
   return head+'\n'+lines.join('\n');
 }
 function fallbackCopy(text,done){
@@ -830,7 +722,6 @@ window.copyToOther = item => {
   targetList.push(newRec); save(); toast(isStar ? '已加入记录' : '已加入收藏'); updateBadge();
 };
 function renderList(){
-  hl.style.overflowY = ''; // 👈 每次渲染先重置滚动状态，绝对防止卡死
   const isStar = state.view === 'star'; const sourceList = isStar ? state.starList : state.list;
   const d = sourceList.filter(i=>i.type===state.type&&i.mode===state.mode);
   const prevScrollTop = hl.scrollTop;
@@ -842,7 +733,7 @@ function renderList(){
   updateBadge(); updateAppendBtn(); cp.classList.toggle('show',d.length>0);
   let total=0; d.forEach(i=>{if(i.price)total+=i.price;});
   if(total>0){ta.style.display='block';tv.innerText=total;}else{ta.style.display='none';}
-    if(d.length===0){hl.innerHTML='<div class="et">暂无'+(isStar?'收藏':'记录')+'</div>';return;}
+  if(d.length===0){hl.innerHTML='<div class="et">暂无'+(isStar?'收藏':'记录')+'</div>';return;}
   hl.innerHTML='';
   const frag = document.createDocumentFragment();
   d.forEach(item=>{
@@ -854,9 +745,9 @@ function renderList(){
     let html='';
     if(item.type==='qxc'){
       const luckyCls = item.isLucky ? ' lucky' : '';
-      html='<div class="rw">'; 
+      html='<div class="rw">';
       item.numbers['orange'].forEach(n=>{html+='<div class="ball qf'+luckyCls+'">'+n+'</div>';});
-      html+='<div class="vl"></div>'; 
+      html+='<div class="vl"></div>';
       item.numbers['blue'].forEach(n=>{html+='<div class="ball qb'+luckyCls+'">'+(n<10?'0'+n:n)+'</div>';});
       html+='</div>';
     }else{
@@ -898,177 +789,123 @@ function renderList(){
       timeDiv.style.cssText = 'position:absolute; bottom:2px; right:6px; font-size:10px; color:#d0d0d0; pointer-events:none; z-index:10;';
       div.appendChild(timeDiv);
     }
-    div._itemData = JSON.parse(JSON.stringify(item)); 
+    div._itemData = JSON.parse(JSON.stringify(item));
     bindSwipe(div); sc.appendChild(sal); sc.appendChild(sar); sc.appendChild(div); frag.appendChild(sc);
   });
-    hl.appendChild(frag);
-  requestAnimationFrame(() => {
-    hl.scrollTop = prevScrollTop; // 👈 用 rAF 延迟一帧，保证滚动高度已重算，防止跳顶
-  });
+  hl.appendChild(frag);
+  hl.scrollTop = prevScrollTop;
 }
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
   let pressTimer = null;
   let dragTimer = null;
   item._isLongPressed = false;
+  let dragActive = false;
+  let dragStartY = 0;
 
-  // 拖拽移动逻辑（含边缘自动滚动）
-    const onDragMove = (e) => {
-    if (!isDragging) return;
-    if (e.cancelable) e.preventDefault(); 
-    e.stopPropagation(); // 👈 修复：彻底阻止事件冒泡
-    
-    hl.style.overflowY = 'hidden';
+  const onDragMove = (e) => {
+    if (!dragActive) return;
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
     const clientY = e.touches[0].clientY;
-    dragCurrentY = clientY;
-    
-    // 手指跟手移动
     const moveY = clientY - dragStartY;
-    dragItem.style.transform = `translateY(${moveY}px) scale(1.02)`;
-
-    // 实时计算与其他卡片的碰撞并重排 DOM
-    const siblings = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
-    const currentIdx = siblings.indexOf(dragItem.parentElement);
-    
+    item.style.transform = `translateY(${moveY}px) scale(1.02)`;
+    const list = item.parentElement.parentElement;
+    const siblings = Array.from(list.querySelectorAll('.sc'));
+    const currentIdx = siblings.indexOf(item.parentElement);
     siblings.forEach((sc, idx) => {
       if (idx === currentIdx) return;
       const rect = sc.getBoundingClientRect();
       if (clientY > rect.top && clientY < rect.bottom) {
-        if (idx < currentIdx) {
-          dragItem.parentElement.parentElement.insertBefore(dragItem.parentElement, sc);
-        } else {
-          dragItem.parentElement.parentElement.insertBefore(dragItem.parentElement, sc.nextSibling);
-        }
+        if (idx < currentIdx) list.insertBefore(item.parentElement, sc);
+        else list.insertBefore(item.parentElement, sc.nextSibling);
       }
     });
-
-    // 👇 新增：边缘自动滚动逻辑
     const listRect = hl.getBoundingClientRect();
-    const edgeSize = 60; // 距离边缘 60px 触发滚动
-    if (clientY < listRect.top + edgeSize) {
-      hl.scrollTop -= 8; // 向上滚
-    } else if (clientY > listRect.bottom - edgeSize) {
-      hl.scrollTop += 8; // 向下滚
-    }
+    const edgeSize = 60;
+    if (clientY < listRect.top + edgeSize) hl.scrollTop -= 8;
+    else if (clientY > listRect.bottom - edgeSize) hl.scrollTop += 8;
   };
 
-  // 拖拽结束逻辑
   const onDragEnd = () => {
-    if (!isDragging) return;
-    isDragging = false;
-    
-    dragItem.classList.remove('dragging');
-    dragItem.style.transform = '';
-    document.querySelectorAll('.hi.drag-ghost').forEach(el => el.classList.remove('drag-ghost'));
+    if (!dragActive) return;
+    dragActive = false;
+    item.classList.remove('dragging');
+    item.classList.remove('drag-ghost');
+        item.parentElement.classList.remove('dragging-wrapper');
+    item.style.transform = '';
+    item.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
+    hl.style.overflowY = '';
 
-        hl.style.overflowY = ''; // 👈 修复：用空字符串让 CSS 默认样式接管
-
-        const scrollers = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
-    
-    // 👈 修复：根据 DOM 最新的顺序，去原始数据池里精准匹配，防止数据错位
-    const sourceList = state.view === 'star' ? state.starList : state.list;
-    const newList = [];
-    
-    scrollers.forEach(sc => {
+    // 同步数据
+    const scrollers = Array.from(hl.querySelectorAll('.sc'));
+    const newList = scrollers.map(sc => {
       const hi = sc.querySelector('.hi');
-      // 通过 DOM 上挂载的 id，去原始数据里找到对应的完整数据
-      const originalItem = sourceList.find(i => i.id === hi._itemData.id);
-      if (originalItem) {
-        newList.push(originalItem);
-        // 顺手把最新的引用挂回 DOM
-        hi._itemData = JSON.parse(JSON.stringify(originalItem));
-      }
-    });
-    
-    if (state.view === 'star') {
-      state.starList = newList;
-    } else {
-      state.list = newList;
-    }
-    save();
-    
-    // 👈 修复 1：延迟渲染前校验当前视图是否依然是拖拽时的视图
-    const dragViewType = state.type;
-    const dragViewMode = state.mode;
-    const dragViewStar = state.view === 'star';
+      return hi ? hi._itemData : null;
+    }).filter(Boolean);
 
-    setTimeout(() => {
-      // 如果在这几毫秒内你切了彩种/单复式，就放弃这次渲染，防止串台
-      if (state.type !== dragViewType || state.mode !== dragViewMode || (state.view === 'star') !== dragViewStar) {
-         return; 
-      }
-      renderList(); 
-      toast('✅ 排序已保存');
-    }, 200);
-    
-    setTimeout(() => { isDragging = false; dragItem = null; }, 50);
-    
-            document.removeEventListener('touchmove', onDragMove);
+    if (state.view === 'star') state.starList = newList;
+    else state.list = newList;
+    save();
+
+    document.removeEventListener('touchmove', onDragMove);
     document.removeEventListener('touchend', onDragEnd);
     document.removeEventListener('touchcancel', onDragEnd);
-    
-        // 👈 修复 2：用时间戳记录拖拽结束时间，防止松手瞬间误触和状态干扰
-    dragItem._dragEndTime = Date.now();
-    setTimeout(() => { 
-      if (dragItem) {
-        // 顺手恢复过渡
-        dragItem.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
-      }
-    }, 100);
+
+    item._dragEndTime = Date.now();
+    toast('✅ 排序已保存');
   };
 
-    item.addEventListener('touchstart',e=>{
-    // 👈 修复 2：如果距离上次拖拽结束不到 100ms，直接拦截，防止误触
-    if (item._dragEndTime && Date.now() - item._dragEndTime < 100) {
-      return;
-    }
+  item.addEventListener('touchstart', e => {
+    if (item._dragEndTime && Date.now() - item._dragEndTime < 100) return;
     if (isMenuLocked) {
       setTimeout(() => { isMenuLocked = false; }, 50);
-      return; 
+      return;
     }
-    
     const allowLongPress = (state.view !== 'star') && (state.mode === 'single');
     if (item.classList.contains('swiped-left') || item.classList.contains('swiped-right')) return;
-    
-    document.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el=>{ if(el!==item){ el.classList.remove('swiped-left','swiped-right'); el.style.transform=''; } });
-    
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
+    document.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el => {
+      if (el !== item) { el.classList.remove('swiped-left', 'swiped-right'); el.style.transform = ''; }
+    });
 
-    // 1. 初始化拖拽检测
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    sw = false; dir = null; item._isLongPressed = false;
+    item.style.transition = 'none';
+
+    // 1. 拖拽检测（200ms 后上下滑动 >10px 就进入拖拽）
     dragTimer = setTimeout(() => {
       const onFirstMove = (ev) => {
         const dy = ev.touches[0].clientY - sy;
         const dx = ev.touches[0].clientX - sx;
-        
         if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
           document.removeEventListener('touchmove', onFirstMove);
           clearTimeout(pressTimer);
-          isDragging = true;
-          dragItem = item;
+          dragActive = true;
           dragStartY = ev.touches[0].clientY;
           item._isLongPressed = true;
-          
+
           playFeedback();
           item.classList.add('dragging');
           item.classList.add('drag-ghost');
+          item.parentElement.classList.add('dragging-wrapper');
           item.style.transform = `translateY(0) scale(1.02)`;
-          
+          hl.style.overflowY = 'hidden';
+
           document.addEventListener('touchmove', onDragMove, { passive: false });
           document.addEventListener('touchend', onDragEnd);
           document.addEventListener('touchcancel', onDragEnd);
           ev.preventDefault();
-        } 
-        else if (Math.abs(dx) > 10) {
+        } else if (Math.abs(dx) > 10) {
           document.removeEventListener('touchmove', onFirstMove);
         }
       };
       document.addEventListener('touchmove', onFirstMove, { passive: false });
-    }, 200); 
+    }, 200);
 
-    // 2. 初始化长按菜单
+    // 2. 长按菜单（500ms 不动弹出）
     if (allowLongPress) {
       pressTimer = setTimeout(() => {
-        if (isDragging) return; 
+        if (dragActive) return;
         item._isLongPressed = true;
         if (e.cancelable) e.preventDefault();
         playFeedback();
@@ -1076,40 +913,37 @@ function bindSwipe(item){
         const rect = item.getBoundingClientRect();
         const menu = document.getElementById('ctx-menu');
         const overlay = document.getElementById('ctx-overlay');
-        const menuH = 132; const menuW = 120; const gap = 6;  
+        const menuH = 132; const menuW = 120; const gap = 6;
         const screenH = window.innerHeight; const screenW = window.innerWidth;
-        const scaleOffset = rect.height * 0.025; const liftOffset = 4;
-        const actualTop = rect.top + scaleOffset - liftOffset; 
-        const actualBottom = rect.bottom - scaleOffset - liftOffset;
-        const actualLeft = rect.left + (rect.width * 0.025);
+        const actualTop = rect.top + rect.height * 0.025 - 4;
+        const actualBottom = rect.bottom - rect.height * 0.025 - 4;
+        const actualLeft = rect.left + rect.width * 0.025;
         let top;
-        if (actualTop > screenH / 2) { top = actualTop - menuH - gap; } else { top = actualBottom + gap; }
-        if (top < 8) top = 8; if (top + menuH > screenH - 8) top = screenH - menuH - 8;
-        let left = actualLeft; if (left + menuW > screenW - 8) left = screenW - menuW - 8; if (left < 8) left = 8;
-        menu.style.top = top + 'px'; menu.style.left = left + 'px';
+        if (actualTop > screenH / 2) top = actualTop - menuH - gap;
+        else top = actualBottom + gap;
+        if (top < 8) top = 8;
+        if (top + menuH > screenH - 8) top = screenH - menuH - 8;
+        let left = actualLeft;
+        if (left + menuW > screenW - 8) left = screenW - menuW - 8;
+        if (left < 8) left = 8;
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
         isMenuLocked = true;
-        // 👈 修复 1：去掉了重复的 classList.add，避免视觉闪烁和状态异常
-        overlay.classList.add('show'); 
+        overlay.classList.add('show');
         menu.classList.add('show');
-        
-                const handleMenuClick = (ev) => {
+
+        const handleMenuClick = (ev) => {
           ev.stopPropagation(); ev.preventDefault();
           const target = ev.target.closest('.ctx-menu-item');
           if (!target) return;
-          
-          // 👈 立即销毁监听器
           document.removeEventListener('touchstart', handleMenuClick);
-          
-                    const itemId = target.id;
-          overlay.classList.remove('show'); 
-          menu.classList.remove('show'); 
+          const itemId = target.id;
+          overlay.classList.remove('show');
+          menu.classList.remove('show');
           item.parentElement.classList.remove('pressing');
           item._isLongPressed = false;
           item.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
-
-          // 👈 修复：把取消判断移到状态清理之后，保证卡片恢复正常
           if (itemId === 'ctx-cancel') return;
-
           setTimeout(() => {
             if (itemId === 'ctx-copy') {
               if (item._itemData) copyRecordBelow(item._itemData);
@@ -1124,76 +958,82 @@ function bindSwipe(item){
             }
           }, 50);
         };
-        
         setTimeout(() => {
           document.addEventListener('touchstart', handleMenuClick, { passive: false });
-        }, 50);                                 
+        }, 50);
       }, 500);
     }
-  },{passive:true});
+  }, { passive: true });
 
-  item.addEventListener('touchmove',e=>{
-    if (isDragging) return; 
-    const cx=e.touches[0].clientX; const cy=e.touches[0].clientY; const dx=cx-sx; const dy=cy-sy;
+  item.addEventListener('touchmove', e => {
+    if (dragActive) return;
+    const cx = e.touches[0].clientX; const cy = e.touches[0].clientY;
+    const dx = cx - sx; const dy = cy - sy;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       clearTimeout(pressTimer);
-      if(!item._isLongPressed) item.parentElement.classList.remove('pressing');
+      if (!item._isLongPressed) item.parentElement.classList.remove('pressing');
     }
-    if(dir===null){ if(Math.abs(dx)>6||Math.abs(dy)>6){ dir=Math.abs(dx)>Math.abs(dy)?'h':'v'; } }
-    if(dir==='v'){ return; }
-    if(Math.abs(dx)>10) sw=true;
+    if (dir === null) { if (Math.abs(dx) > 6 || Math.abs(dy) > 6) dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'; }
+    if (dir === 'v') return;
+    if (Math.abs(dx) > 10) sw = true;
     let t = 0;
-    if(item.classList.contains('swiped-left')){ t = -70 + dx; if(t>0) t=0; if(t<-70) t=-70; }
-    else if(item.classList.contains('swiped-right')){ t = 70 + dx; if(t<0) t=0; if(t>70) t=70; }
-    else{ t = dx; if(t>70) t=70; if(t<-70) t=-70; }
-    item.style.transform='translateX('+t+'px)';
-  },{passive:true});
+    if (item.classList.contains('swiped-left')) { t = -70 + dx; if (t > 0) t = 0; if (t < -70) t = -70; }
+    else if (item.classList.contains('swiped-right')) { t = 70 + dx; if (t < 0) t = 0; if (t > 70) t = 70; }
+    else { t = dx; if (t > 70) t = 70; if (t < -70) t = -70; }
+    item.style.transform = 'translateX(' + t + 'px)';
+  }, { passive: true });
 
-    item.addEventListener('touchend',e=>{
+  item.addEventListener('touchend', e => {
     clearTimeout(pressTimer);
     clearTimeout(dragTimer);
-    if (isDragging) return; 
-    
-    hl.style.overflowY = ''; // 👈 修复：用空字符串恢复
-
-    if (!item._isLongPressed) {
-      item.parentElement.classList.remove('pressing');
-    }
-    item.style.transition='transform .3s cubic-bezier(.25,.8,.25,1)';
+    if (dragActive) return;
+    if (!item._isLongPressed) item.parentElement.classList.remove('pressing');
+    item.style.transition = 'transform .3s cubic-bezier(.25,.8,.25,1)';
     if (item._isLongPressed) {
-      e.preventDefault(); e.stopPropagation(); return; 
+      e.preventDefault(); e.stopPropagation(); return;
     }
-    if(dir==='v'){ item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : ''); dir=null; sw=false; return; }
+    if (dir === 'v') {
+      item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : '');
+      dir = null; sw = false; return;
+    }
     const dx = e.changedTouches[0].clientX - sx;
-    if(sw){
-      if(item.classList.contains('swiped-left')){ if(dx > 30){ item.classList.remove('swiped-left'); item.style.transform=''; } else { item.style.transform='translateX(-70px)'; } }
-      else if(item.classList.contains('swiped-right')){ if(dx < -30){ item.classList.remove('swiped-right'); item.style.transform=''; } else { item.style.transform='translateX(70px)'; } }
-      else{ if(dx < -30){ item.classList.add('swiped-left'); item.style.transform='translateX(-70px)'; } else if(dx > 30){ item.classList.add('swiped-right'); item.style.transform='translateX(70px)'; } else { item.style.transform=''; } }
-    }else{
+    if (sw) {
+      if (item.classList.contains('swiped-left')) {
+        if (dx > 30) { item.classList.remove('swiped-left'); item.style.transform = ''; }
+        else { item.style.transform = 'translateX(-70px)'; }
+      } else if (item.classList.contains('swiped-right')) {
+        if (dx < -30) { item.classList.remove('swiped-right'); item.style.transform = ''; }
+        else { item.style.transform = 'translateX(70px)'; }
+      } else {
+        if (dx < -30) { item.classList.add('swiped-left'); item.style.transform = 'translateX(-70px)'; }
+        else if (dx > 30) { item.classList.add('swiped-right'); item.style.transform = 'translateX(70px)'; }
+        else { item.style.transform = ''; }
+      }
+    } else {
       item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : '');
     }
-    setTimeout(()=>{sw=false;},50);
+    setTimeout(() => { sw = false; }, 50);
   });
 
-  item.addEventListener('click',e=>{ 
-    if(sw || item._isLongPressed) {
+  item.addEventListener('click', e => {
+    if (sw || item._isLongPressed) {
       e.stopPropagation(); e.preventDefault(); item._isLongPressed = false;
+    } else if (item.classList.contains('swiped-left') || item.classList.contains('swiped-right')) {
+      item.classList.remove('swiped-left', 'swiped-right'); item.style.transform = '';
     }
-    else if(item.classList.contains('swiped-left') || item.classList.contains('swiped-right')){ 
-      item.classList.remove('swiped-left','swiped-right'); item.style.transform=''; 
-    } 
   });
 }
+
 window.delRec=id=>{
   const isStar = state.view === 'star';
   if (isStar) { state.starList = state.starList.filter(i=>i.id!==id); }
   else { state.list = state.list.filter(i=>i.id!==id); }
   save(); renderList(); updateBadge(); updateAppendBtn();
 };
-function save(){ 
+function save(){
   try {
-    localStorage.setItem('solo_lotto_v24',JSON.stringify(state.list)); 
-    localStorage.setItem('solo_lotto_star_v24',JSON.stringify(state.starList)); 
+    localStorage.setItem('solo_lotto_v24',JSON.stringify(state.list));
+    localStorage.setItem('solo_lotto_star_v24',JSON.stringify(state.starList));
   } catch (e) {
     console.warn('本地存储写入失败', e);
     toast('⚠️ 本地存储空间不足，记录可能无法保存');
@@ -1301,12 +1141,12 @@ let rbColorTimer = null;
 let rbIsLongPress = false;
 btnRandom.addEventListener('touchstart', (e) => {
   rbIsLongPress = false;
-  if (state.mode === 'multi') { 
-    return; 
+  if (state.mode === 'multi') {
+    return;
   }
   btnRandom.classList.add('pressing');
   rbColorTimer = setTimeout(() => {
-        if(!rbIsLongPress) btnRandom.style.background = '#f5e6c8';
+    if(!rbIsLongPress) btnRandom.style.background = '#f5e6c8';
   }, 300);
 
   rbTimer = setTimeout(() => {
@@ -1347,8 +1187,8 @@ btnRandom.addEventListener('touchend', (e) => {
   btnRandom.classList.remove('pressing');
   btnRandom.style.background = '';
   if (!rbIsLongPress) {
-    e.preventDefault();     
-    randomFill(); 
+    e.preventDefault();
+    randomFill();
   }
 }, {passive: false});
 
@@ -1402,8 +1242,8 @@ scrollContainer.addEventListener('scroll', () => {
     setTimeout(() => {
       isThrottled = false;
       lastScrollTop = scrollContainer.scrollTop;
-    }, 300);  
-  } 
+    }, 300);
+  }
   else if (st < lastScrollTop) {
     bottomBtns.classList.remove('hide-bar');
   }
@@ -1457,56 +1297,37 @@ updateBadge();
 renderList();
 updateAppendBtn();
 
-// 👇 修复 1：全局兜底，防止各种极端情况（如接电话、切后台）导致拖拽状态卡死
+// 全局兜底清理
 document.addEventListener('touchcancel', () => {
-  if (isDragging) {
-    isDragging = false;
-    if (dragItem) {
-      dragItem.classList.remove('dragging');
-      dragItem.classList.remove('drag-ghost');
-      dragItem.style.transform = '';
-    }
-        hl.style.overflowY = ''; // 👈 修复：用空字符串恢复
-    renderList();
-  }
+  hl.style.overflowY = '';
+  document.querySelectorAll('.hi.dragging, .hi.drag-ghost').forEach(el => {
+    el.classList.remove('dragging', 'drag-ghost');
+    el.style.transform = '';
+    if (el.parentElement) el.parentElement.classList.remove('dragging-wrapper');
+  });
+  document.querySelectorAll('.sc.dragging-wrapper').forEach(el => el.classList.remove('dragging-wrapper'));
 });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     if (typeof rbTimer !== 'undefined') clearTimeout(rbTimer);
     if (typeof rbColorTimer !== 'undefined') clearTimeout(rbColorTimer);
-    
-    if (isDragging) {
-      const scrollers = Array.from(hl.querySelectorAll('.sc'));
-      const newList = scrollers.map(sc => {
-        const hi = sc.querySelector('.hi');
-        return hi ? hi._itemData : null;
-      }).filter(Boolean);
-      
-      if (state.view === 'star') state.starList = newList;
-      else state.list = newList;
-      save();
-
-      isDragging = false;
-      if (dragItem) {
-        dragItem.classList.remove('dragging');
-        dragItem.classList.remove('drag-ghost');
-        dragItem.style.transform = '';
-      }
-      hl.style.overflowY = '';
-      renderList();
-    }
+    document.querySelectorAll('.hi.dragging, .hi.drag-ghost').forEach(el => {
+      el.classList.remove('dragging', 'drag-ghost');
+      el.style.transform = '';
+      if (el.parentElement) el.parentElement.classList.remove('dragging-wrapper');
+    });
+    document.querySelectorAll('.sc.dragging-wrapper').forEach(el => el.classList.remove('dragging-wrapper'));
+    hl.style.overflowY = '';
   }
 });
-/* 👇 在这里插入画廊的 JS 逻辑 👇 */
-// ================= 全屏画廊交互逻辑 =================
+
+// ================= 画廊逻辑 =================
 let titleSwipeTime = 0;
 const titleEl = document.querySelector('.header h1');
-// 👈 为了避免和长按菜单的 overlay 冲突，这里重命名为 galOverlay
 const galOverlay = document.getElementById('gallery-overlay');
 const galTrack = document.getElementById('gallery-track');
 
-// 画廊图片版本：增/删图片时把数字+1，自动清除旧记忆索引【可选】
 const GALLERY_IMG_VERSION = 2;
 const localVer = parseInt(localStorage.getItem('galleryImgVer')||'0',10);
 let galleryLastIndex;
@@ -1518,7 +1339,6 @@ if(localVer !== GALLERY_IMG_VERSION){
   galleryLastIndex = parseInt(localStorage.getItem('galleryLastIndex') ?? '0',10) || 0;
 }
 
-// 1. 标题横向滑动防误触
 let startX = 0, startY = 0;
 titleEl.addEventListener('touchstart', e => {
   startX = e.touches[0].clientX;
@@ -1528,78 +1348,55 @@ titleEl.addEventListener('touchstart', e => {
 titleEl.addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - startX;
   const dy = e.changedTouches[0].clientY - startY;
-
   const isHorizontalSwipe = Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy);
-
   if(isHorizontalSwipe){
     const now = Date.now();
     if (now - titleSwipeTime < 1000) {
-      // 第二次滑动：打开画廊，不震动
       titleSwipeTime = 0;
       openGallery();
     } else {
-      // 第一次滑动：震动提示，记录时间戳
       playFeedback();
       titleSwipeTime = now;
     }
   }
 });
 
-// 2. 打开画廊
 function openGallery() {
-  // 👈 修复 3：每次打开强制重置画廊拖拽状态，防止意外中断导致的卡死
   isDraggingDown = false;
   currentTranslateY = 0;
   galTrack.style.transform = '';
   galTrack.style.transition = '';
-
-  // 👇 1. 先清动画（此时还没 .show，无动画可停），避免"跑几帧又被重置"的抖动
   galTrack.style.animation = 'none';
   void galTrack.offsetWidth;
-
-  // 👇 2. 进入渲染树，起始 opacity = 0（.show 只负责 display，不再管 opacity）
   galOverlay.style.display = 'block';
   galOverlay.style.opacity = '0';
   galOverlay.classList.add('show');
-
-  // 👇 3. 强制 reflow，让 opacity:0 成为"上一次计算值"
   void galOverlay.offsetWidth;
-
-  // 👇 4. 下一帧把 opacity 推到 1，触发淡入
   requestAnimationFrame(() => {
     galOverlay.style.opacity = '1';
   });
-
-  // 👇 5. 解除动画抑制，缩放回弹从 0% 干净开始
   galTrack.style.animation = '';
-
-  // 👇 6. 定位到记忆的下标
   galTrack.style.scrollBehavior = 'auto';
   galTrack.scrollLeft = window.innerWidth * (1 + galleryLastIndex);
-
   setTimeout(() => {
     galTrack.style.scrollBehavior = 'smooth';
   }, 50);
 }
 
-// 3. 无限循环无缝跳跃
-let isJumping = false; // 👈 新增防抖锁
+let isJumping = false;
 galTrack.addEventListener('scroll', () => {
   if (!galOverlay.classList.contains('show') || isJumping) return;
-  
   const width = window.innerWidth;
   const total = galTrack.children.length;
-
-    // 监听用户是否滑动到了边界
   if (Math.round(galTrack.scrollLeft) <= 0) {
     isJumping = true;
-    galTrack.style.scrollBehavior = 'auto'; // 瞬间关闭平滑
+    galTrack.style.scrollBehavior = 'auto';
     galTrack.scrollLeft = width * (total - 2);
     requestAnimationFrame(() => {
       galTrack.style.scrollBehavior = 'smooth';
       isJumping = false;
     });
-    return; // 👈 关键：跳跃帧直接结束，不往下算索引
+    return;
   } else if (galTrack.scrollLeft + width >= width * total - 2) {
     isJumping = true;
     galTrack.style.scrollBehavior = 'auto';
@@ -1608,37 +1405,29 @@ galTrack.addEventListener('scroll', () => {
       galTrack.style.scrollBehavior = 'smooth';
       isJumping = false;
     });
-    return; // 👈 关键：跳跃帧直接结束，不往下算索引
+    return;
   }
-
-  // 计算当前真实图片下标，持久化保存到localStorage
   let scrollX = Math.round(galTrack.scrollLeft);
   let realOffset = scrollX - width;
   let idx = Math.round(realOffset / width);
   const realTotal = total - 2;
-
   if(realTotal > 0){
-    if(idx < 0 || idx >= realTotal){
-      idx = 0;
-    }
+    if(idx < 0 || idx >= realTotal) idx = 0;
   }else{
     idx = 0;
   }
-
   if(galleryLastIndex !== idx){
     galleryLastIndex = idx;
     localStorage.setItem('galleryLastIndex', String(galleryLastIndex));
   }
 }, { passive: true });
 
-// 4. 下拉退出逻辑
 let galleryStartY = 0, galleryStartX = 0, isDraggingDown = false, currentTranslateY = 0;
 
-// 画廊拖拽状态重置（正常回弹 / 手势被打断都调用）
 function galleryDragReset() {
   isDraggingDown = false;
   currentTranslateY = 0;
-  galTrack.style.animation = 'none';            // 👈 停掉缩放动画
+  galTrack.style.animation = 'none';
   galTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
   galTrack.style.transform = 'translateY(0)';
   galOverlay.style.opacity = '1';
@@ -1660,54 +1449,41 @@ galTrack.addEventListener('touchmove', e => {
   if (!galOverlay.classList.contains('show')) return;
   const dy = e.touches[0].clientY - galleryStartY;
   const dx = e.touches[0].clientX - galleryStartX;
-
-  // 如果水平移动大于垂直移动，说明是在左右切图，不拦截
   if (Math.abs(dx) > Math.abs(dy)) return;
-
-  // 如果垂直下拉超过 10px
   if (dy > 10) {
     isDraggingDown = true;
-    if (e.cancelable) e.preventDefault(); // 阻止原生的上下回弹
-    
+    if (e.cancelable) e.preventDefault();
     currentTranslateY = dy;
-    // 增加阻尼感，拉得越远越难拉
-    const resistance = 0.8; 
+    const resistance = 0.8;
     const moveY = dy * resistance;
-    
     galTrack.style.transform = `translateY(${moveY}px)`;
-    galOverlay.style.opacity = 1 - (moveY / 600); // 越拉越透明
+    galOverlay.style.opacity = 1 - (moveY / 600);
   }
 }, { passive: false });
 
 galTrack.addEventListener('touchend', e => {
   if (isDraggingDown) {
-        if (currentTranslateY > 150) {
-      // 超过 150px 触发关闭
-      galTrack.style.animation = 'none';        // 👈 关键：停掉缩放动画，避免和 transform 打架
+    if (currentTranslateY > 150) {
+      galTrack.style.animation = 'none';
       galTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
       galTrack.style.transform = `translateY(100vh)`;
       galOverlay.style.opacity = '0';
-            setTimeout(() => {
+      setTimeout(() => {
         galOverlay.style.display = 'none';
-        galOverlay.style.opacity = '';          // 👈 清行内 opacity，保证下次打开从 0 淡入
+        galOverlay.style.opacity = '';
         galTrack.style.transform = '';
         galTrack.style.transition = '';
         galTrack.style.animation = '';
         galOverlay.classList.remove('show');
       }, 300);
-
     } else {
-      // 不够，回弹
       galleryDragReset();
     }
   }
 });
 
-// 手势被系统打断时重置拖拽状态
 galTrack.addEventListener('touchcancel', () => {
   galleryDragReset();
 }, { passive: true });
-
-/* 👆 插入结束 👆 */
 </script>
 </body></html>
