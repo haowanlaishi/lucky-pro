@@ -53,11 +53,20 @@
     border-color: rgba(255,255,255,0.1) !important; 
   }
 
-  /* 4. 长按菜单的“复制” */
-    /* 👈 修复长按菜单的字色，确保在深色背景下清晰可见 */
-  .ctx-menu-item.copy { color: #f2f2f7 !important; }  /* 复制：改为纯白，最清晰 */
-  .ctx-menu-item.fill { color: #ff6b6b !important; }  /* 回填：改为亮红，醒目 */
-  .ctx-menu-item:last-child { color: #98989d !important; } /* 取消：次级灰，拉开层次 */ 
+    /* 4. 长按菜单的“复制” */
+  .ctx-menu-item.copy { color: #f2f2f7 !important; }  
+  .ctx-menu-item.fill { color: #ff6b6b !important; }  
+  .ctx-menu-item:last-child { color: #98989d !important; } 
+
+  /* 👇 修复 3：深色模式下的拖拽样式 */
+  .hi.dragging {
+    background: #2c2c2e !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
+  }
+  .hi.drag-ghost {
+    background: rgba(255,255,255,0.05) !important;
+    opacity: 0.5;
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg-page); position: relative; font-family: -apple-system, sans-serif; color: var(--text-main); }
@@ -222,6 +231,21 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 }
 /* 👆 插入结束 👆 */
 
+/* 👇 新增：长按拖拽排序专用样式 */
+.hi.dragging {
+  transition: none !important; 
+  z-index: 999 !important;
+  background: var(--bg-card);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+  transform: scale(1.02) !important; 
+  opacity: 0.95;
+}
+.hi.drag-ghost {
+  opacity: 0.3; 
+  background: var(--bg-input);
+}
+</style>
+
 </style></head>
 <body>
 <div class="app-scroll">
@@ -367,6 +391,12 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 <!-- 👆 插入结束 👆 -->
 <script>
 let isMenuLocked = false;
+// 👇 新增：拖拽排序全局变量
+let isDragging = false;
+let dragItem = null;
+let dragStartY = 0;
+let dragCurrentY = 0;
+
 function playFeedback() {
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
     window.Capacitor.Plugins.Haptics.impact({ style: 'HEAVY' }).catch(() => {});
@@ -872,20 +902,131 @@ function renderList(){
 function bindSwipe(item){
   let sx=0, sy=0, sw=false, dir=null;
   let pressTimer = null;
+  let dragTimer = null;
   item._isLongPressed = false;
+
+  // 拖拽移动逻辑
+    const onDragMove = (e) => {
+    if (!isDragging) return;
+    if (e.cancelable) e.preventDefault(); 
+    
+    // 👈 修复 2：强制锁死列表滚动，防止拖拽时列表跟着跑
+    hl.style.overflowY = 'hidden';
+
+    const clientY = e.touches[0].clientY;
+    dragCurrentY = clientY;
+    
+    // 手指跟手移动
+    const moveY = clientY - dragStartY;
+    dragItem.style.transform = `translateY(${moveY}px) scale(1.02)`;
+
+    // 实时计算与其他卡片的碰撞并重排 DOM
+    const siblings = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
+    const currentIdx = siblings.indexOf(dragItem.parentElement);
+    
+    siblings.forEach((sc, idx) => {
+      if (idx === currentIdx) return;
+      const rect = sc.getBoundingClientRect();
+      // 如果手指进入了另一张卡片的中心区域
+      if (clientY > rect.top && clientY < rect.bottom) {
+        if (idx < currentIdx) {
+          dragItem.parentElement.parentElement.insertBefore(dragItem.parentElement, sc);
+        } else {
+          dragItem.parentElement.parentElement.insertBefore(dragItem.parentElement, sc.nextSibling);
+        }
+      }
+    });
+  };
+
+  // 拖拽结束逻辑
+    const onDragEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    
+    // 清理 UI 状态
+    dragItem.classList.remove('dragging');
+    dragItem.style.transform = '';
+    document.querySelectorAll('.hi.drag-ghost').forEach(el => el.classList.remove('drag-ghost'));
+
+    // 👈 修复 2 的收尾：恢复列表滚动
+    hl.style.overflowY = 'auto';
+
+    // 提取最新顺序并保存
+    const scrollers = Array.from(dragItem.parentElement.parentElement.querySelectorAll('.sc'));
+    
+    // 👈 修复 1：重新绑定最新的 _itemData 到 DOM 上
+    const newList = scrollers.map(sc => {
+      const hi = sc.querySelector('.hi');
+      return hi._itemData;
+    }).filter(Boolean);
+    
+    if (state.view === 'star') {
+      state.starList = newList;
+    } else {
+      state.list = newList;
+    }
+    save();
+    renderList(); // 重渲染，清理虚影
+    toast('✅ 排序已保存');
+    
+    setTimeout(() => { isDragging = false; dragItem = null; }, 50);
+    
+    // 移除全局监听
+    document.removeEventListener('touchmove', onDragMove);
+    document.removeEventListener('touchend', onDragEnd);
+    document.removeEventListener('touchcancel', onDragEnd);
+  };
 
   item.addEventListener('touchstart',e=>{
     if (isMenuLocked) {
       setTimeout(() => { isMenuLocked = false; }, 50);
       return; 
     }
+    
     const allowLongPress = (state.view !== 'star') && (state.mode === 'single');
     if (item.classList.contains('swiped-left') || item.classList.contains('swiped-right')) return;
+    
     document.querySelectorAll('.hi.swiped-left,.hi.swiped-right').forEach(el=>{ if(el!==item){ el.classList.remove('swiped-left','swiped-right'); el.style.transform=''; } });
+    
     sx=e.touches[0].clientX; sy=e.touches[0].clientY; sw=false; dir=null; item._isLongPressed=false; item.style.transition='none';
 
+    // 👇 1. 初始化拖拽检测（200ms 后有上下滑动，就进入拖拽）
+    dragTimer = setTimeout(() => {
+      const onFirstMove = (ev) => {
+        const dy = ev.touches[0].clientY - sy;
+        const dx = ev.touches[0].clientX - sx;
+        
+        // 如果向上/向下移动超过 10px，立刻进入拖拽模式
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+          document.removeEventListener('touchmove', onFirstMove);
+          clearTimeout(pressTimer); // 取消长按菜单
+          isDragging = true;
+          dragItem = item;
+          dragStartY = ev.touches[0].clientY;
+          item._isLongPressed = true; // 阻止滑动和点击
+          
+          playFeedback();
+          item.classList.add('dragging');
+          item.classList.add('drag-ghost');
+          item.style.transform = `translateY(0) scale(1.02)`;
+          
+          document.addEventListener('touchmove', onDragMove, { passive: false });
+          document.addEventListener('touchend', onDragEnd);
+          document.addEventListener('touchcancel', onDragEnd);
+          ev.preventDefault();
+        } 
+        // 如果是左右滑动，取消拖拽检测，交给原本的 swipe 逻辑
+        else if (Math.abs(dx) > 10) {
+          document.removeEventListener('touchmove', onFirstMove);
+        }
+      };
+      document.addEventListener('touchmove', onFirstMove, { passive: false });
+    }, 200); 
+
+    // 👇 2. 初始化长按菜单（500ms 不动，弹出原菜单）
     if (allowLongPress) {
       pressTimer = setTimeout(() => {
+        if (isDragging) return; // 如果已经在拖拽了，就不弹菜单
         item._isLongPressed = true;
         if (e.cancelable) e.preventDefault();
         playFeedback();
@@ -893,96 +1034,56 @@ function bindSwipe(item){
         const rect = item.getBoundingClientRect();
         const menu = document.getElementById('ctx-menu');
         const overlay = document.getElementById('ctx-overlay');
-        const menuH = 132;
-        const menuW = 120;
-        const gap = 6;  
-        const screenH = window.innerHeight;
-        const screenW = window.innerWidth;
-        const scaleOffset = rect.height * 0.025;
-        const liftOffset = 4;
+        const menuH = 132; const menuW = 120; const gap = 6;  
+        const screenH = window.innerHeight; const screenW = window.innerWidth;
+        const scaleOffset = rect.height * 0.025; const liftOffset = 4;
         const actualTop = rect.top + scaleOffset - liftOffset; 
         const actualBottom = rect.bottom - scaleOffset - liftOffset;
         const actualLeft = rect.left + (rect.width * 0.025);
         let top;
-        if (actualTop > screenH / 2) {
-          top = actualTop - menuH - gap;
-        } else {
-          top = actualBottom + gap;
-        }
-        if (top < 8) top = 8;
-        if (top + menuH > screenH - 8) top = screenH - menuH - 8;
-        let left = actualLeft;
-        if (left + menuW > screenW - 8) left = screenW - menuW - 8;
-        if (left < 8) left = 8;
-        menu.style.top = top + 'px';
-        menu.style.left = left + 'px';
+        if (actualTop > screenH / 2) { top = actualTop - menuH - gap; } else { top = actualBottom + gap; }
+        if (top < 8) top = 8; if (top + menuH > screenH - 8) top = screenH - menuH - 8;
+        let left = actualLeft; if (left + menuW > screenW - 8) left = screenW - menuW - 8; if (left < 8) left = 8;
+        menu.style.top = top + 'px'; menu.style.left = left + 'px';
         isMenuLocked = true;
-        overlay.classList.add('show');
-        menu.classList.add('show');
+        overlay.classList.add('show'); menu.classList.add('show');
+        
+        // 菜单项克隆绑定
         const oldCopy = document.getElementById('ctx-copy');
         const oldFill = document.getElementById('ctx-fill');
         const oldCancel = document.getElementById('ctx-cancel');
-        let newCopy = oldCopy;
-        let newFill = oldFill;
-        let newCancel = oldCancel;
+        let newCopy = oldCopy; let newFill = oldFill; let newCancel = oldCancel;
         if (oldCopy && oldFill && oldCancel && oldCopy.parentNode && oldFill.parentNode && oldCancel.parentNode) {
-          newCopy = oldCopy.cloneNode(true);
-          newFill = oldFill.cloneNode(true);
-          newCancel = oldCancel.cloneNode(true);
-          oldCopy.parentNode.replaceChild(newCopy, oldCopy);
-          oldFill.parentNode.replaceChild(newFill, oldFill);
-          oldCancel.parentNode.replaceChild(newCancel, oldCancel);
+          newCopy = oldCopy.cloneNode(true); newFill = oldFill.cloneNode(true); newCancel = oldCancel.cloneNode(true);
+          oldCopy.parentNode.replaceChild(newCopy, oldCopy); oldFill.parentNode.replaceChild(newFill, oldFill); oldCancel.parentNode.replaceChild(newCancel, oldCancel);
         }
         newCopy.addEventListener('touchstart', (ev) => {
-          isMenuLocked = false;
-          ev.stopPropagation();
-          ev.preventDefault();
-          overlay.classList.remove('show');
-          menu.classList.remove('show');
-          item.parentElement.classList.remove('pressing');
-          setTimeout(() => {
-            if (item._itemData) {
-              copyRecordBelow(item._itemData);
-            } else {
-              toast('获取数据失败');
-            }
-          }, 50);
+          isMenuLocked = false; ev.stopPropagation(); ev.preventDefault();
+          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
+          setTimeout(() => { if (item._itemData) copyRecordBelow(item._itemData); else toast('获取数据失败'); }, 50);
         });
         newFill.addEventListener('touchstart', (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-          overlay.classList.remove('show');
-          menu.classList.remove('show');
-          item.parentElement.classList.remove('pressing');
-          if (state.mode === 'multi' || state.view === 'star') {
-             toast('仅单式记录支持回填'); return;
-          }
+          ev.stopPropagation(); ev.preventDefault();
+          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
+          if (state.mode === 'multi' || state.view === 'star') { toast('仅单式记录支持回填'); return; }
           setTimeout(() => {
             const activeItem = item._itemData;
-            if (!activeItem) {
-              toast('获取数据失败');
-              return;
-            }
+            if (!activeItem) { toast('获取数据失败'); return; }
             state.sel = JSON.parse(JSON.stringify(activeItem.numbers));
-            state.locked = {};
-            state.hasTriggerRandom = false;
-            state.isLucky = activeItem.isLucky || false;
-            render();
-            toast('✅ 已回填至选号区');
+            state.locked = {}; state.hasTriggerRandom = false; state.isLucky = activeItem.isLucky || false;
+            render(); toast('✅ 已回填至选号区');
           }, 50);
         });
         newCancel.addEventListener('touchstart', (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-          overlay.classList.remove('show');
-          menu.classList.remove('show');
-          item.parentElement.classList.remove('pressing');
+          ev.stopPropagation(); ev.preventDefault();
+          overlay.classList.remove('show'); menu.classList.remove('show'); item.parentElement.classList.remove('pressing');
         });        
       }, 500);
     }
   },{passive:true});
 
   item.addEventListener('touchmove',e=>{
+    if (isDragging) return; // 拖拽时拦截原有的左右滑动
     const cx=e.touches[0].clientX; const cy=e.touches[0].clientY; const dx=cx-sx; const dy=cy-sy;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       clearTimeout(pressTimer);
@@ -998,32 +1099,27 @@ function bindSwipe(item){
     item.style.transform='translateX('+t+'px)';
   },{passive:true});
 
-  item.addEventListener('touchend',e=>{
+    item.addEventListener('touchend',e=>{
     clearTimeout(pressTimer);
+    clearTimeout(dragTimer);
+    if (isDragging) return; // 拖拽结束由全局事件接管
+    
+    // 👈 修复补充：如果没触发拖拽，也要确保滚动是解锁的
+    hl.style.overflowY = 'auto';
+
     if (!item._isLongPressed) {
       item.parentElement.classList.remove('pressing');
     }
     item.style.transition='transform .3s cubic-bezier(.25,.8,.25,1)';
     if (item._isLongPressed) {
-      e.preventDefault();
-      e.stopPropagation();
-      return; 
+      e.preventDefault(); e.stopPropagation(); return; 
     }
-    if(dir==='v'){
-      item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : '');
-      dir=null; sw=false; return;
-    }
+    if(dir==='v'){ item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : ''); dir=null; sw=false; return; }
     const dx = e.changedTouches[0].clientX - sx;
     if(sw){
-      if(item.classList.contains('swiped-left')){
-        if(dx > 30){ item.classList.remove('swiped-left'); item.style.transform=''; } else { item.style.transform='translateX(-70px)'; }
-      }else if(item.classList.contains('swiped-right')){
-        if(dx < -30){ item.classList.remove('swiped-right'); item.style.transform=''; } else { item.style.transform='translateX(70px)'; }
-      }else{
-        if(dx < -30){ item.classList.add('swiped-left'); item.style.transform='translateX(-70px)'; }
-        else if(dx > 30){ item.classList.add('swiped-right'); item.style.transform='translateX(70px)'; }
-        else { item.style.transform=''; }
-      }
+      if(item.classList.contains('swiped-left')){ if(dx > 30){ item.classList.remove('swiped-left'); item.style.transform=''; } else { item.style.transform='translateX(-70px)'; } }
+      else if(item.classList.contains('swiped-right')){ if(dx < -30){ item.classList.remove('swiped-right'); item.style.transform=''; } else { item.style.transform='translateX(70px)'; } }
+      else{ if(dx < -30){ item.classList.add('swiped-left'); item.style.transform='translateX(-70px)'; } else if(dx > 30){ item.classList.add('swiped-right'); item.style.transform='translateX(70px)'; } else { item.style.transform=''; } }
     }else{
       item.style.transform = item.classList.contains('swiped-left') ? 'translateX(-70px)' : (item.classList.contains('swiped-right') ? 'translateX(70px)' : '');
     }
@@ -1032,13 +1128,10 @@ function bindSwipe(item){
 
   item.addEventListener('click',e=>{ 
     if(sw || item._isLongPressed) {
-      e.stopPropagation(); 
-      e.preventDefault();
-      item._isLongPressed = false;
+      e.stopPropagation(); e.preventDefault(); item._isLongPressed = false;
     }
     else if(item.classList.contains('swiped-left') || item.classList.contains('swiped-right')){ 
-      item.classList.remove('swiped-left','swiped-right'); 
-      item.style.transform=''; 
+      item.classList.remove('swiped-left','swiped-right'); item.style.transform=''; 
     } 
   });
 }
