@@ -235,11 +235,18 @@ html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--b
 <body>
 <div class="app-scroll">
   <div class="top-sticky-wrapper">
-    <div class="header">
+        <div class="header">
   <h1>
-    <picture>
-      <source srcset="images/title-dark.webp" media="(prefers-color-scheme: dark)">
-      <img src="images/title-light.webp" alt="中国体育彩票" class="title-img">
+    <!-- 福彩（双色球默认显示） -->
+    <picture id="logo-fc">
+      <source srcset="images/fc-dark.webp" media="(prefers-color-scheme: dark)">
+      <img src="images/fc-light.webp" alt="中国福利彩票" class="title-img">
+    </picture>
+    
+    <!-- 体彩（大乐透/七星彩显示，默认隐藏） -->
+    <picture id="logo-tc" style="display: none;">
+      <source srcset="images/tc-dark.webp" media="(prefers-color-scheme: dark)">
+      <img src="images/tc-light.webp" alt="中国体育彩票" class="title-img">
     </picture>
   </h1>
 </div>
@@ -1144,7 +1151,13 @@ document.querySelectorAll('.tab').forEach(tab=>{
     }
     if (state.type === 'ssq' || state.type === 'dlt') { modeCache[state.type] = state.mode; }
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active');
-    state.type = tab.dataset.type;
+        state.type = tab.dataset.type;
+    
+    // 👇 新增：切换标题图片（双色球显示福彩，其余显示体彩）
+    const isFc = (state.type === 'ssq');
+    document.getElementById('logo-fc').style.display = isFc ? 'block' : 'none';
+    document.getElementById('logo-tc').style.display = isFc ? 'none' : 'block';
+    
     if (state.type === 'qxc') { state.mode = 'single'; } else { state.mode = modeCache[state.type] || 'single'; }
     document.querySelectorAll('.mb').forEach(b=>b.classList.toggle('active', b.dataset.mode === state.mode));
     state.view = 'list'; initState();
